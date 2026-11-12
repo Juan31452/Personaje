@@ -2,6 +2,10 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
+## Video export
+
+The editor exports the character and dialogue as a 720 × 1280, 24 fps MP4 using H.264 High and AAC stereo (silent audio track). The first export loads the FFmpeg WebAssembly encoder and can take longer. Browsers with the File System Access API let you choose the destination; if writing there fails, the MP4 falls back to the browser's normal download behavior.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)

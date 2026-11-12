@@ -1,199 +1,91 @@
-
-import { useState } from "react";
+import type { FC } from "react";
+import { useBlink } from "../Hook/useBlink";
+import { useDialog } from "../Hook/useDialog";
+import Cabeza from "../parts/Cabeza";
+import Cuello from "../parts/Cuello";
+import Torso from "../parts/Torso";
+import Pantalon from "../parts/Pantalon";
+import Zapatos from "../parts/Zapatos";
+import Brazo from "../parts/Brazo";
+import Mano from "../parts/Mano";
 
 interface JuanSalazarProps {
-  isTalking?: boolean;
+  dialog?: string;
+  headTilt?: number;
+  leftArmAngle?: number;
+  rightArmAngle?: number;
+  leftHandAngle?: number;
+  rightHandAngle?: number;
 }
 
-export default function JuanSalazar({
-  isTalking = false,
-}: JuanSalazarProps) {
-  const [mouthOpen, setMouthOpen] = useState(false);
+const JuanSalazar: FC<JuanSalazarProps> = ({
+  dialog = "",
+  headTilt = 0,
+  leftArmAngle = 0,
+  rightArmAngle = 0,
+  leftHandAngle = 0,
+  rightHandAngle = 0,
+}) => {
+  const isBlinking = useBlink();
+  const { mouthState } = useDialog(dialog, 180);
 
   return (
     <svg
-      viewBox="0 0 400 500"
+      viewBox="0 0 600 900"
       xmlns="http://www.w3.org/2000/svg"
       width="100%"
       role="img"
-      aria-label="Personaje animado de Juan Salazar"
+      aria-label="Juan Salazar de cuerpo completo"
     >
       {/* Fondo */}
-      <rect
-        width="400"
-        height="500"
-        fill="#EAF2F8"
-        rx="20"
-      />
+      <rect width="600" height="900" rx="20" fill="#EAF2F8" />
 
-      
-      
-      {/* Brazos */}
-      <g fill="#172B4D">
-
-        {/* Brazo izquierdo */}
-        <path
-          d="
-            M105 365
-            C75 370 65 400 65 430
-            L55 475
-            C52 490 60 500 72 500
-            C84 500 90 490 94 475
-            L120 410
-            Z
-          "
-        />
-
-        {/* Brazo derecho */}
-        <path
-          d="
-            M295 365
-            C325 370 335 400 335 430
-            L345 475
-            C348 490 340 500 328 500
-            C316 500 310 490 306 475
-            L280 410
-            Z
-          "
-        />
-
-      </g>
-
-      {/* Cuerpo */}
-      <path
-        d="M90 500
-          L100 390
-          Q110 340 200 340
-          Q290 340 300 390
-          L310 500
-          Z"
-        fill="#172B4D"
-      />
-
-
-      {/* Cuello */}
-      <path
-        d="M165 320 L165 365 Q200 390 235 365
-           L235 320 Z"
-        fill="#C98765"
-      />
-
-      {/* Cabeza */}
+      <g transform="translate(110 114) scale(0.95)">
+      {/* Sombra del suelo */}
       <ellipse
         cx="200"
-        cy="220"
-        rx="105"
-        ry="125"
-        fill="#DDA17A"
+        cy="665"
+        rx="115"
+        ry="12"
+        fill="#B8C7D3"
+        opacity="0.5"
       />
 
-      {/* Orejas */}
-      <ellipse
-        cx="95"
-        cy="230"
-        rx="17"
-        ry="27"
-        fill="#DDA17A"
-      />
+      {/* =========================
+          ORDEN DE CAPAS (de atrás hacia adelante)
+      ========================= */}
 
-      <ellipse
-        cx="305"
-        cy="230"
-        rx="17"
-        ry="27"
-        fill="#DDA17A"
-      />
+      {/* 1. Piernas y zapatos (fondo) */}
+      <Pantalon />
+      <Zapatos />
 
-      {/* Cejas */}
-      <path
-        d="M130 170 Q155 155 180 170"
-        stroke="#292929"
-        strokeWidth="9"
-        strokeLinecap="round"
-        fill="none"
-      />
+      {/* 2. Torso */}
+      <Torso />
 
-      <path
-        d="M220 170 Q245 155 270 170"
-        stroke="#292929"
-        strokeWidth="9"
-        strokeLinecap="round"
-        fill="none"
-      />
+      {/* 3. Cuello */}
+      <Cuello />
 
-      {/* Ojos */}
-      <ellipse
-        cx="155"
-        cy="195"
-        rx="10"
-        ry="13"
-        fill="#292929"
-      />
+      {/* 4. Brazos (detrás de las manos) */}
+      <Brazo lado="izquierdo" angle={leftArmAngle} />
+      <Brazo lado="derecho" angle={rightArmAngle} />
 
-      <ellipse
-        cx="245"
-        cy="195"
-        rx="10"
-        ry="13"
-        fill="#292929"
-      />
+      {/* 5. Manos (al final de los brazos) */}
+      <Mano lado="izquierdo" angle={leftHandAngle} />
+      <Mano lado="derecho" angle={rightHandAngle} />
 
-      {/* Gafas */}
+      {/* 6. Cabeza (al frente, con rotación) */}
       <g
-        fill="none"
-        stroke="#151515"
-        strokeWidth="8"
+        id="cabeza-grupo"
+        style={{
+          transformOrigin: "200px 270px",
+          transform: `rotate(${headTilt}deg)`,
+        }}
       >
-        <rect
-          x="112"
-          y="175"
-          width="83"
-          height="55"
-          rx="12"
-        />
-
-        <rect
-          x="205"
-          y="175"
-          width="83"
-          height="55"
-          rx="12"
-        />
-
-        <path d="M195 195 L205 195" />
-
-        <path d="M112 190 L95 185" />
-
-        <path d="M288 190 L305 185" />
+        <Cabeza isBlinking={isBlinking} mouthState={mouthState} />
       </g>
-
-      {/* Nariz */}
-      <path
-        d="M200 200 L190 245 Q200 255 212 245"
-        fill="none"
-        stroke="#B97855"
-        strokeWidth="6"
-        strokeLinecap="round"
-      />
-
-      {/* Boca */}
-      {isTalking || mouthOpen ? (
-        <ellipse
-          cx="200"
-          cy="285"
-          rx="24"
-          ry="18"
-          fill="#6D2929"
-        />
-      ) : (
-        <path
-          d="M175 285 Q200 300 225 285"
-          fill="none"
-          stroke="#6D2929"
-          strokeWidth="6"
-          strokeLinecap="round"
-        />
-      )}
+      </g>
     </svg>
   );
-}
+};
+
+export default JuanSalazar;
