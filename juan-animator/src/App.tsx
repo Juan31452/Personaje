@@ -2,44 +2,77 @@
 import JuanSalazar from "./components/JuanSalazar";
 import Dialogo from "./components/Dialogo";
 import "./App.css";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useAudioMouth } from "./Hook/useAudioMouth";
 import { useVideoExport } from "./Hook/useVideoExport";
-
-const TEXTO_DIALOGO =
-  "Hola soy Juan Salazar y estoy creado con TypeScript utilizando React";
-const VELOCIDAD_DIALOGO_MS = 180;
-const gruposVocales =
-  TEXTO_DIALOGO.normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .match(/[aeiou]+/g)?.length ?? 0;
-const DURACION_DIALOGO_MS = Math.max(
-  gruposVocales * 2 * VELOCIDAD_DIALOGO_MS + 200,
-  1200,
-);
 
 function App() {
   const [dialogo, setDialogo] = useState("");
   const [mostrarDialogo, setMostrarDialogo] = useState(false);
-  const dialogTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [audioError, setAudioError] = useState("");
+  const [audioDurationMs, setAudioDurationMs] = useState(0);
+  const [audioUrl, setAudioUrl] = useState("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioFileName, setAudioFileName] = useState("");
+  const audioRef = useRef<HTMLAudioElement>(null);
   const characterRef = useRef<HTMLDivElement>(null);
+  const {
+    mouthState,
+    audioStream,
+    error: mouthError,
+    resumeAudioContext,
+  } = useAudioMouth(audioRef);
 
   useEffect(() => {
-    return () => {
-      if (dialogTimeoutRef.current) clearTimeout(dialogTimeoutRef.current);
-    };
-  }, []);
+    if (!audioUrl) return;
+    return () => URL.revokeObjectURL(audioUrl);
+  }, [audioUrl]);
+
+  const importarAudio = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    if (file.type && !file.type.startsWith("audio/")) {
+      setAudioError("Selecciona un archivo de audio válido.");
+      return;
+    }
+
+    audioRef.current?.pause();
+    setMostrarDialogo(false);
+    setAudioDurationMs(0);
+    setAudioError("");
+    setAudioFile(file);
+    setAudioFileName(file.name);
+    setAudioUrl(URL.createObjectURL(file));
+  };
+
+  const iniciarDialogo = useCallback(async () => {
+    const audio = audioRef.current;
+    if (!audio || !audioUrl) {
+      throw new Error("Primero importa un archivo de audio.");
+    }
+
+    setAudioError("");
+    setMostrarDialogo(Boolean(dialogo.trim()));
+
+    try {
+      await resumeAudioContext();
+      audio.currentTime = 0;
+      await audio.play();
+    } catch (caughtError) {
+      setMostrarDialogo(false);
+      setAudioError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "No se pudo reproducir el audio del diálogo.",
+      );
+      throw caughtError;
+    }
+  }, [audioUrl, dialogo, resumeAudioContext]);
 
   const hablar = () => {
-    setDialogo(TEXTO_DIALOGO);
-    setMostrarDialogo(true);
-
-    if (dialogTimeoutRef.current) clearTimeout(dialogTimeoutRef.current);
-
-    dialogTimeoutRef.current = setTimeout(() => {
-      setMostrarDialogo(false);
-      dialogTimeoutRef.current = null;
-    }, DURACION_DIALOGO_MS);
+    void iniciarDialogo().catch(() => undefined);
   };
 
   const {
@@ -50,17 +83,71 @@ function App() {
     status: exportStatus,
   } = useVideoExport({
     targetRef: characterRef,
-    durationMs: DURACION_DIALOGO_MS,
-    onStart: hablar,
+    durationMs: audioDurationMs,
+    audioFile,
+    onPrepare: resumeAudioContext,
+    onStart: iniciarDialogo,
   });
 
   return (
     <div className="video-editor">
+      <audio
+        ref={audioRef}
+        src={audioUrl || undefined}
+        preload="auto"
+        onLoadedMetadata={(event) => {
+          const duration = event.currentTarget.duration;
+          if (Number.isFinite(duration)) {
+            setAudioDurationMs(duration * 1000);
+          }
+        }}
+        onEnded={() => setMostrarDialogo(false)}
+        onError={() => {
+          setAudioError("No se pudo cargar el audio del diálogo.");
+          setMostrarDialogo(false);
+        }}
+      />
       <aside className="editor-toolbar" aria-label="Controles del editor">
-        <button onClick={hablar} disabled={isExporting}>
+        <label className="editor-field">
+          <span>Importar audio</span>
+          <input
+            type="file"
+            accept="audio/*,.mp3,.wav,.m4a,.ogg"
+            onChange={importarAudio}
+            disabled={isExporting}
+          />
+        </label>
+        {audioFileName && (
+          <span className="audio-file-name" title={audioFileName}>
+            {audioFileName}
+          </span>
+        )}
+        <small className="editor-note">
+          El audio y el texto no se guardan en el proyecto.
+        </small>
+        <label className="editor-field">
+          <span>Texto del diálogo</span>
+          <textarea
+            value={dialogo}
+            onChange={(event) => setDialogo(event.currentTarget.value)}
+            placeholder="Escribe el texto para la burbuja..."
+            disabled={isExporting}
+          />
+        </label>
+        <button
+          onClick={hablar}
+          disabled={
+            isExporting || !audioUrl || !audioStream || audioDurationMs === 0
+          }
+        >
           Hablar
         </button>
-        <button onClick={exportVideo} disabled={isExporting}>
+        <button
+          onClick={exportVideo}
+          disabled={
+            isExporting || !audioUrl || !audioStream || audioDurationMs === 0
+          }
+        >
           {isExporting ? `Exportando ${progress}%` : "Exportar MP4"}
         </button>
       </aside>
@@ -73,14 +160,17 @@ function App() {
             animar={!isExporting}
             posicion="arriba"
           />
-          <JuanSalazar dialog={dialogo} />
+          <JuanSalazar
+            mouthState={mouthState}
+            isTalking={mostrarDialogo}
+          />
         </div>
-        {(exportError || exportStatus) && (
+        {(audioError || mouthError || exportError || exportStatus) && (
           <p
             className={`export-status${exportError ? " export-status--error" : ""}`}
-            role={exportError ? "alert" : "status"}
+            role={audioError || mouthError || exportError ? "alert" : "status"}
           >
-            {exportError || exportStatus}
+            {audioError || mouthError || exportError || exportStatus}
           </p>
         )}
       </main>

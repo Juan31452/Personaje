@@ -1,6 +1,8 @@
 import type { FC } from "react";
+import fondo from "../assets/fondo.jpg";
 import { useBlink } from "../Hook/useBlink";
-import { useDialog } from "../Hook/useDialog";
+import { useArmGesture } from "../Hook/useArmGesture";
+import { useHeadTilt } from "../Hook/useHeadTilt";
 import Cabeza from "../parts/Cabeza";
 import Cuello from "../parts/Cuello";
 import Torso from "../parts/Torso";
@@ -10,24 +12,24 @@ import Brazo from "../parts/Brazo";
 import Mano from "../parts/Mano";
 
 interface JuanSalazarProps {
-  dialog?: string;
+  mouthState?: number;
   headTilt?: number;
-  leftArmAngle?: number;
-  rightArmAngle?: number;
+  isTalking?: boolean;
   leftHandAngle?: number;
   rightHandAngle?: number;
 }
 
 const JuanSalazar: FC<JuanSalazarProps> = ({
-  dialog = "",
+  mouthState = 0,
   headTilt = 0,
-  leftArmAngle = 0,
-  rightArmAngle = 0,
+  isTalking = false,
   leftHandAngle = 0,
   rightHandAngle = 0,
 }) => {
   const isBlinking = useBlink();
-  const { mouthState } = useDialog(dialog, 180);
+  const { leftArmAngle, rightArmAngle } = useArmGesture(isTalking);
+  const naturalHeadTilt = useHeadTilt(true, -8, 8, 1800);
+  const effectiveHeadTilt = headTilt + naturalHeadTilt;
 
   return (
     <svg
@@ -37,8 +39,14 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
       role="img"
       aria-label="Juan Salazar de cuerpo completo"
     >
-      {/* Fondo */}
-      <rect width="600" height="900" rx="20" fill="#EAF2F8" />
+      <image
+        href={fondo}
+        x="0"
+        y="0"
+        width="600"
+        height="900"
+        preserveAspectRatio="xMidYMid slice"
+      />
 
       <g transform="translate(110 114) scale(0.95)">
       {/* Sombra del suelo */}
@@ -65,20 +73,32 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
       {/* 3. Cuello */}
       <Cuello />
 
-      {/* 4. Brazos (detrás de las manos) */}
-      <Brazo lado="izquierdo" angle={leftArmAngle} />
-      <Brazo lado="derecho" angle={rightArmAngle} />
-
-      {/* 5. Manos (al final de los brazos) */}
-      <Mano lado="izquierdo" angle={leftHandAngle} />
-      <Mano lado="derecho" angle={rightHandAngle} />
+      {/* 4. Brazos y manos, unidos para compartir el movimiento del brazo */}
+      <g
+        style={{
+          transformOrigin: "140px 280px",
+          transform: `rotate(${leftArmAngle}deg)`,
+        }}
+      >
+        <Brazo lado="izquierdo" />
+        <Mano lado="izquierdo" angle={leftHandAngle} />
+      </g>
+      <g
+        style={{
+          transformOrigin: "260px 280px",
+          transform: `rotate(${rightArmAngle}deg)`,
+        }}
+      >
+        <Brazo lado="derecho" />
+        <Mano lado="derecho" angle={rightHandAngle} />
+      </g>
 
       {/* 6. Cabeza (al frente, con rotación) */}
       <g
         id="cabeza-grupo"
         style={{
           transformOrigin: "200px 270px",
-          transform: `rotate(${headTilt}deg)`,
+          transform: `rotate(${effectiveHeadTilt}deg)`,
         }}
       >
         <Cabeza isBlinking={isBlinking} mouthState={mouthState} />

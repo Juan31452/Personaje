@@ -16,16 +16,16 @@ const Dialogo: FC<DialogoProps> = ({
   if (!visible) return null;
 
   const posiciones = {
-    arriba: { top: "20px", left: "50%", transform: "translateX(-50%)" },
+    arriba: { top: "-5px", left: "50%", transform: "translateX(-50%)" },
     abajo: { top: "calc(100% + 20px)", left: "50%", transform: "translateX(-50%)" },
-    izquierda: { left: "-8px", top: "50%", transform: "translateY(-50%)" },
-    derecha: { left: "calc(100% + 20px)", top: "50%", transform: "translateY(-50%)" },
+    izquierda: { left: "-30px", top: "36%", transform: "translateY(-50%)" },
+    derecha: { left: "calc(100% + 30px)", top: "36%", transform: "translateY(-50%)" },
   };
 
   const puntas = {
     arriba: {
       left: "50%",
-      bottom: "-15px",
+      bottom: "-10px",
       transform: "translateX(-50%)",
       borderLeft: "15px solid transparent",
       borderRight: "15px solid transparent",
@@ -33,7 +33,7 @@ const Dialogo: FC<DialogoProps> = ({
     },
     abajo: {
       left: "50%",
-      top: "-15px",
+      top: "-10px",
       transform: "translateX(-50%)",
       borderLeft: "15px solid transparent",
       borderRight: "15px solid transparent",
@@ -71,10 +71,12 @@ const Dialogo: FC<DialogoProps> = ({
           background: "white",
           border: "3px solid #2C3E50",
           borderRadius: "24px",
-          padding: "24px 30px",
-          maxWidth: "340px",
-          fontSize: "20px",
-          lineHeight: 1.4,
+          padding: "18px 24px",
+          width: "min(52vw, 360px)",
+          maxWidth: "360px",
+          minWidth: "240px",
+          fontSize: "18px",
+          lineHeight: 1.35,
           fontWeight: "600",
           color: "#2C3E50",
           textAlign: "left",
@@ -97,11 +99,9 @@ const Dialogo: FC<DialogoProps> = ({
         @keyframes fadeIn {
           from {
             opacity: 0;
-            transform: translateX(-50%) translateY(10px);
           }
           to {
             opacity: 1;
-            transform: translateX(-50%) translateY(0);
           }
         }
       `}</style>

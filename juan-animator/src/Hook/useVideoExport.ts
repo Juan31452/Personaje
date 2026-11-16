@@ -3,18 +3,24 @@ import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toCanvas } from "html-to-image";
 import ffmpegCoreUrl from "@ffmpeg/core?url";
 import ffmpegWasmUrl from "@ffmpeg/core/wasm?url";
+import fondo from "../assets/fondo.jpg";
 
 const VIDEO_WIDTH = 720;
 const VIDEO_HEIGHT = 1280;
 const PANEL_WIDTH = 720;
 const PANEL_HEIGHT = 1080;
+const fondoImage = new Image();
+fondoImage.src = fondo;
+
+interface SaveFileWritable {
+  write: (data: Uint8Array) => Promise<void>;
+  close: () => Promise<void>;
+  abort: () => Promise<void>;
+}
 
 interface SaveFileHandle {
-  createWritable: () => Promise<{
-    write: (data: Uint8Array) => Promise<void>;
-    close: () => Promise<void>;
-  }>;
-  getFile: () => Promise<File>;
+  name: string;
+  createWritable: () => Promise<SaveFileWritable>;
 }
 
 interface SaveFilePickerOptions {
@@ -34,7 +40,9 @@ interface WindowWithSavePicker extends Window {
 interface UseVideoExportOptions {
   targetRef: RefObject<HTMLElement | null>;
   durationMs: number;
-  onStart: () => void;
+  audioFile: File | null;
+  onPrepare: () => void | Promise<void>;
+  onStart: () => void | Promise<void>;
 }
 
 const wait = (milliseconds: number) =>
@@ -42,6 +50,13 @@ const wait = (milliseconds: number) =>
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "No se pudo exportar el video.";
+
+const getAudioInputName = (file: File) => {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  const safeExtension =
+    extension && /^[a-z0-9]{1,8}$/.test(extension) ? extension : "audio";
+  return `dialogue-input.${safeExtension}`;
+};
 
 const downloadMp4 = (mp4: Blob) => {
   const url = URL.createObjectURL(mp4);
@@ -55,6 +70,8 @@ const downloadMp4 = (mp4: Blob) => {
 export const useVideoExport = ({
   targetRef,
   durationMs,
+  audioFile,
+  onPrepare,
   onStart,
 }: UseVideoExportOptions) => {
   const ffmpegRef = useRef<FFmpeg | null>(null);
@@ -66,9 +83,20 @@ export const useVideoExport = ({
   const exportVideo = useCallback(async () => {
     if (isExporting) return;
 
+    setError("");
+    setStatus("");
+
     const target = targetRef.current;
     if (!target) {
       setError("No se encontró el área del personaje para exportar.");
+      return;
+    }
+    if (!audioFile || audioFile.size === 0) {
+      setError("Importa un archivo de audio válido antes de exportar.");
+      return;
+    }
+    if (!Number.isFinite(durationMs) || durationMs <= 0) {
+      setError("El audio todavía no está listo para exportar.");
       return;
     }
 
@@ -102,22 +130,18 @@ export const useVideoExport = ({
 
     try {
       const saveHandle = await saveHandlePromise;
-
-      let ffmpeg = ffmpegRef.current;
-      if (!ffmpeg) {
-        setStatus("Cargando el codificador MP4...");
-        ffmpeg = new FFmpeg();
-        ffmpeg.on("progress", ({ progress: conversionProgress }) => {
-          const boundedProgress = Number.isFinite(conversionProgress)
-            ? Math.max(0, Math.min(1, conversionProgress))
-            : 0;
-          setProgress(65 + Math.round(boundedProgress * 30));
-        });
-        await ffmpeg.load({
-          coreURL: ffmpegCoreUrl,
-          wasmURL: ffmpegWasmUrl,
-        });
-        ffmpegRef.current = ffmpeg;
+      let writable: SaveFileWritable | null = null;
+      let saveError: unknown = null;
+      if (saveHandle) {
+        setStatus("Preparando el guardado en la ubicación elegida...");
+        try {
+          writable = await saveHandle.createWritable();
+        } catch (caughtError) {
+          saveError = caughtError;
+          setStatus(
+            "El navegador bloqueó esa ubicación; se descargará una copia al terminar.",
+          );
+        }
       }
 
       const frame = document.createElement("canvas");
@@ -132,10 +156,11 @@ export const useVideoExport = ({
           canvasWidth: PANEL_WIDTH,
           canvasHeight: PANEL_HEIGHT,
           pixelRatio: 1,
-          backgroundColor: "#EAF2F8",
+          backgroundColor: "transparent",
         });
-        context.fillStyle = "#EAF2F8";
-        context.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+
+        context.clearRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+        context.drawImage(fondoImage, 0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
         context.drawImage(
           panel,
           0,
@@ -155,7 +180,7 @@ export const useVideoExport = ({
         throw new Error("Este navegador no permite grabar el video temporal.");
       }
 
-      stream = frame.captureStream(6);
+      stream = frame.captureStream(10);
       recorder = new MediaRecorder(stream, {
         mimeType,
         videoBitsPerSecond: 5_000_000,
@@ -182,11 +207,36 @@ export const useVideoExport = ({
         );
       });
 
+      await onPrepare();
       recorder.start(250);
-      setStatus("Grabando el diálogo...");
-      onStart();
+      setStatus("Grabando y preparando el codificador MP4...");
+      await onStart();
 
-      const endTime = Date.now() + durationMs;
+      const ffmpegLoadPromise = (async () => {
+        let ffmpeg = ffmpegRef.current;
+        if (ffmpeg) return { ffmpeg };
+
+        ffmpeg = new FFmpeg();
+        ffmpeg.on("progress", ({ progress: conversionProgress }) => {
+          const boundedProgress = Number.isFinite(conversionProgress)
+            ? Math.max(0, Math.min(1, conversionProgress))
+            : 0;
+          setProgress(65 + Math.round(boundedProgress * 30));
+        });
+
+        try {
+          await ffmpeg.load({
+            coreURL: ffmpegCoreUrl,
+            wasmURL: ffmpegWasmUrl,
+          });
+          ffmpegRef.current = ffmpeg;
+          return { ffmpeg };
+        } catch (caughtError) {
+          return { error: caughtError };
+        }
+      })();
+
+      const endTime = Date.now() + durationMs + 500;
       while (Date.now() < endTime) {
         await drawPanel();
         const elapsed = durationMs - (endTime - Date.now());
@@ -201,21 +251,34 @@ export const useVideoExport = ({
       if (webm.size === 0) throw new Error("La grabación quedó vacía.");
 
       setProgress(65);
+      setStatus("Finalizando la preparación del codificador MP4...");
+      const ffmpegResult = await ffmpegLoadPromise;
+      if ("error" in ffmpegResult) throw ffmpegResult.error;
+      const { ffmpeg } = ffmpegResult;
+
       setStatus("Convirtiendo la grabación a MP4...");
-      await ffmpeg.writeFile("recording.webm", new Uint8Array(await webm.arrayBuffer()));
+      const audioInputName = getAudioInputName(audioFile);
+      await ffmpeg.writeFile(
+        "recording.webm",
+        new Uint8Array(await webm.arrayBuffer()),
+      );
+      await ffmpeg.writeFile(
+        audioInputName,
+        new Uint8Array(await audioFile.arrayBuffer()),
+      );
       const exitCode = await ffmpeg.exec([
         "-i",
         "recording.webm",
-        "-f",
-        "lavfi",
         "-i",
-        "anullsrc=channel_layout=stereo:sample_rate=48000",
+        audioInputName,
         "-map",
         "0:v:0",
         "-map",
         "1:a:0",
         "-c:v",
         "libx264",
+        "-preset",
+        "ultrafast",
         "-crf",
         "23",
         "-profile:v",
@@ -240,7 +303,7 @@ export const useVideoExport = ({
         "-movflags",
         "+faststart",
         "-r",
-        "24",
+        "10",
         "-f",
         "mp4",
         "video.mp4",
@@ -260,38 +323,37 @@ export const useVideoExport = ({
         throw new Error("El archivo generado no tiene una cabecera MP4 válida.");
       }
 
-      let saveError: unknown;
-      if (saveHandle) {
-        setStatus("Guardando el MP4...");
+      if (saveHandle && writable && !saveError) {
+        setStatus(`Guardando en la ubicación elegida: ${saveHandle.name}...`);
         try {
-          const writable = await saveHandle.createWritable();
           await writable.write(mp4Bytes);
           await writable.close();
-          const savedFile = await saveHandle.getFile();
-          if (savedFile.size !== mp4.size) {
-            throw new Error(
-              `El archivo guardado quedó incompleto (${savedFile.size} de ${mp4.size} bytes).`,
-            );
-          }
         } catch (caughtError) {
           saveError = caughtError;
+          try {
+            await writable.abort();
+          } catch (abortError) {
+            saveError = new Error(
+              `${getErrorMessage(caughtError)} No se pudo cancelar la escritura: ${getErrorMessage(abortError)}`,
+            );
+          }
         }
       }
 
-      if (!saveHandle || saveError) {
-        setStatus("No se pudo guardar en la ubicación elegida; iniciando descarga...");
+      if (!saveHandle) {
+        setStatus("Descargando en la carpeta predeterminada del navegador...");
         downloadMp4(mp4);
-      }
-
-      setProgress(100);
-      if (saveError) {
+      } else if (saveError) {
+        downloadMp4(mp4);
         setError(
-          `No se pudo guardar en la ubicación elegida. Se inició la descarga del MP4. Detalle: ${getErrorMessage(saveError)}`,
+          `No se pudo guardar en la ubicación elegida. Se inició una descarga en la carpeta del navegador. Detalle: ${getErrorMessage(saveError)}`,
         );
         setStatus("");
       } else {
-        setStatus("Video exportado correctamente.");
+        setStatus(`Video guardado en la ubicación elegida: ${saveHandle.name}`);
       }
+
+      setProgress(100);
     } catch (caughtError) {
       if (caughtError instanceof DOMException && caughtError.name === "AbortError") {
         setStatus("");
@@ -301,10 +363,10 @@ export const useVideoExport = ({
       setStatus("");
     } finally {
       if (recorder?.state === "recording") recorder.stop();
-      stream?.getTracks().forEach((track) => track.stop());
+      stream?.getVideoTracks().forEach((track) => track.stop());
       setIsExporting(false);
     }
-  }, [durationMs, isExporting, onStart, targetRef]);
+  }, [audioFile, durationMs, isExporting, onPrepare, onStart, targetRef]);
 
   return { exportVideo, isExporting, progress, error, status };
 };

@@ -2,19 +2,13 @@ import type { FC } from "react";
 
 interface BrazoProps {
   lado: "izquierdo" | "derecho";
-  angle?: number;
 }
 
-const Brazo: FC<BrazoProps> = ({ lado, angle = 0 }) => {
+const Brazo: FC<BrazoProps> = ({ lado }) => {
   const isIzq = lado === "izquierdo";
-  const pivotX = isIzq ? 140 : 260;
-  const pivotY = 280;
 
   return (
-    <g
-      id={`brazo-${lado}`}
-      style={{ transformOrigin: `${pivotX}px ${pivotY}px`, transform: `rotate(${angle}deg)` }}
-    >
+    <g id={`brazo-${lado}`}>
       <path
         d={
           isIzq
