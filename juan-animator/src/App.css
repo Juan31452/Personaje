@@ -49,6 +49,17 @@
   white-space: nowrap;
 }
 
+.editor-toolbar .editor-button-secondary {
+  padding: 8px;
+  background: transparent;
+  color: #d7e3f4;
+  border: 1px solid rgba(215, 227, 244, 0.55);
+}
+
+.editor-toolbar .editor-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .editor-note {
   color: #d7e3f4;
   font-size: 11px;

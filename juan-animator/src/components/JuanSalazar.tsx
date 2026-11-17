@@ -12,6 +12,7 @@ import BrazoCompleto from "../parts/BrazoCompleto";
 
 interface JuanSalazarProps {
   mouthState?: number;
+  backgroundImageUrl?: string;
   headTilt?: number;
   isTalking?: boolean;
   leftForearmAngle?: number;
@@ -22,6 +23,7 @@ interface JuanSalazarProps {
 
 const JuanSalazar: FC<JuanSalazarProps> = ({
   mouthState = 0,
+  backgroundImageUrl = fondo,
   headTilt = 0,
   isTalking = false,
   leftForearmAngle ,
@@ -59,7 +61,7 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
       aria-label="Juan Salazar de cuerpo completo"
     >
       <image
-        href={fondo}
+        href={backgroundImageUrl}
         x="0"
         y="0"
         width="600"

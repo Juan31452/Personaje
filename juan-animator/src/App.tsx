@@ -14,6 +14,9 @@ function App() {
   const [audioUrl, setAudioUrl] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioFileName, setAudioFileName] = useState("");
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
+  const [backgroundFileName, setBackgroundFileName] = useState("");
+  const [backgroundError, setBackgroundError] = useState("");
   const audioRef = useRef<HTMLAudioElement>(null);
   const characterRef = useRef<HTMLDivElement>(null);
   const {
@@ -27,6 +30,11 @@ function App() {
     if (!audioUrl) return;
     return () => URL.revokeObjectURL(audioUrl);
   }, [audioUrl]);
+
+  useEffect(() => {
+    if (!backgroundImageUrl) return;
+    return () => URL.revokeObjectURL(backgroundImageUrl);
+  }, [backgroundImageUrl]);
 
   const importarAudio = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
@@ -45,6 +53,21 @@ function App() {
     setAudioFile(file);
     setAudioFileName(file.name);
     setAudioUrl(URL.createObjectURL(file));
+  };
+
+  const importarImagenFondo = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file) return;
+
+    if (file.type && !file.type.startsWith("image/")) {
+      setBackgroundError("Selecciona un archivo de imagen válido.");
+      return;
+    }
+
+    setBackgroundError("");
+    setBackgroundFileName(file.name);
+    setBackgroundImageUrl(URL.createObjectURL(file));
   };
 
   const iniciarDialogo = useCallback(async () => {
@@ -122,8 +145,36 @@ function App() {
             {audioFileName}
           </span>
         )}
+        <label className="editor-field">
+          <span>Importar fondo del personaje</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={importarImagenFondo}
+            disabled={isExporting}
+          />
+        </label>
+        {backgroundFileName && (
+          <span className="audio-file-name" title={backgroundFileName}>
+            {backgroundFileName}
+          </span>
+        )}
+        {backgroundImageUrl && (
+          <button
+            className="editor-button-secondary"
+            onClick={() => {
+              setBackgroundImageUrl("");
+              setBackgroundFileName("");
+              setBackgroundError("");
+            }}
+            disabled={isExporting}
+          >
+            Usar fondo original
+          </button>
+        )}
         <small className="editor-note">
-          El audio y el texto no se guardan en el proyecto.
+          El audio, el texto y el fondo personalizado no se guardan en el
+          proyecto.
         </small>
         <label className="editor-field">
           <span>Texto del diálogo</span>
@@ -163,14 +214,31 @@ function App() {
           <JuanSalazar
             mouthState={mouthState}
             isTalking={mostrarDialogo}
+            backgroundImageUrl={backgroundImageUrl || undefined}
           />
         </div>
-        {(audioError || mouthError || exportError || exportStatus) && (
+        {(audioError ||
+          backgroundError ||
+          mouthError ||
+          exportError ||
+          exportStatus) && (
           <p
-            className={`export-status${exportError ? " export-status--error" : ""}`}
-            role={audioError || mouthError || exportError ? "alert" : "status"}
+            className={`export-status${
+              audioError || backgroundError || exportError
+                ? " export-status--error"
+                : ""
+            }`}
+            role={
+              audioError || backgroundError || mouthError || exportError
+                ? "alert"
+                : "status"
+            }
           >
-            {audioError || mouthError || exportError || exportStatus}
+            {audioError ||
+              backgroundError ||
+              mouthError ||
+              exportError ||
+              exportStatus}
           </p>
         )}
       </main>
