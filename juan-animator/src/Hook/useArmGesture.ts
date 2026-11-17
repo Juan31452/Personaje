@@ -1,17 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface ArmAngles {
   leftArmAngle: number;
   rightArmAngle: number;
+  leftForearmAngle: number;
+  rightForearmAngle: number;
 }
 
-/**
- * Hook que simula gestos naturales de los brazos al hablar.
- * @param isActive - Si la animación está activa
- * @param intensity - Intensidad del movimiento (0-10 grados)
- * @param speed - Velocidad de cambio (ms)
- * @param sync - Si los brazos se mueven sincronizados
- */
 export const useArmGesture = (
   isActive = false,
   intensity = 8,
@@ -21,24 +16,34 @@ export const useArmGesture = (
   const [angles, setAngles] = useState<ArmAngles>({
     leftArmAngle: 0,
     rightArmAngle: 0,
+    leftForearmAngle: 0,
+    rightForearmAngle: 0,
   });
 
   useEffect(() => {
     if (!isActive) {
-      setAngles({ leftArmAngle: 0, rightArmAngle: 0 });
+      setAngles({
+        leftArmAngle: 0,
+        rightArmAngle: 0,
+        leftForearmAngle: 0,
+        rightForearmAngle: 0,
+      });
       return;
     }
 
     const gestureInterval = setInterval(() => {
-      // Ángulo aleatorio para el brazo izquierdo
-      const leftAngle = Math.random() * intensity * 2 - intensity;
+      const leftArm = Math.random() * intensity * 2 - intensity;
+      const rightArm = sync ? leftArm : Math.random() * intensity * 2 - intensity;
       
-      // Brazo derecho: sincronizado o independiente
-      const rightAngle = sync ? leftAngle : Math.random() * intensity * 2 - intensity;
+      // Los codos se doblan más que los hombros (gestos naturales)
+      const leftForearm = Math.random() * (intensity * 2) - intensity;
+      const rightForearm = sync ? leftForearm : Math.random() * (intensity * 2) - intensity;
 
       setAngles({
-        leftArmAngle: leftAngle,
-        rightArmAngle: rightAngle,
+        leftArmAngle: leftArm,
+        rightArmAngle: rightArm,
+        leftForearmAngle: leftForearm,
+        rightForearmAngle: rightForearm,
       });
     }, speed);
 

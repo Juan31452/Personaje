@@ -8,13 +8,14 @@ import Cuello from "../parts/Cuello";
 import Torso from "../parts/Torso";
 import Pantalon from "../parts/Pantalon";
 import Zapatos from "../parts/Zapatos";
-import Brazo from "../parts/Brazo";
-import Mano from "../parts/Mano";
+import BrazoCompleto from "../parts/BrazoCompleto";
 
 interface JuanSalazarProps {
   mouthState?: number;
   headTilt?: number;
   isTalking?: boolean;
+  leftForearmAngle?: number;
+  rightForearmAngle?: number;
   leftHandAngle?: number;
   rightHandAngle?: number;
 }
@@ -23,11 +24,22 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
   mouthState = 0,
   headTilt = 0,
   isTalking = false,
+  leftForearmAngle = 0,
+  rightForearmAngle = 0,  
   leftHandAngle = 0,
   rightHandAngle = 0,
 }) => {
   const isBlinking = useBlink();
-  const { leftArmAngle, rightArmAngle } = useArmGesture(isTalking);
+  const {
+    leftArmAngle,
+    rightArmAngle,
+    leftForearmAngle: animatedLeftForearmAngle,
+    rightForearmAngle: animatedRightForearmAngle,
+  } = useArmGesture(isTalking);
+  const effectiveLeftForearmAngle =
+    leftForearmAngle !== undefined ? leftForearmAngle : animatedLeftForearmAngle;
+  const effectiveRightForearmAngle =
+    rightForearmAngle !== undefined ? rightForearmAngle : animatedRightForearmAngle;
   const naturalHeadTilt = useHeadTilt(true, -8, 8, 1800);
   const effectiveHeadTilt = headTilt + naturalHeadTilt;
 
@@ -80,8 +92,16 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
           transform: `rotate(${leftArmAngle}deg)`,
         }}
       >
-        <Brazo lado="izquierdo" />
-        <Mano lado="izquierdo" angle={leftHandAngle} />
+        {/* 4. Brazos articulados */}
+      <BrazoCompleto
+        lado="izquierdo"
+        armAngle={leftArmAngle}
+        forearmAngle={effectiveLeftForearmAngle}
+        handAngle={leftHandAngle}
+      />
+
+
+
       </g>
       <g
         style={{
@@ -89,8 +109,13 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
           transform: `rotate(${rightArmAngle}deg)`,
         }}
       >
-        <Brazo lado="derecho" />
-        <Mano lado="derecho" angle={rightHandAngle} />
+
+      <BrazoCompleto
+        lado="derecho"
+        armAngle={rightArmAngle}
+        forearmAngle={effectiveRightForearmAngle}
+        handAngle={rightHandAngle}
+      />
       </g>
 
       {/* 6. Cabeza (al frente, con rotación) */}
