@@ -38,7 +38,7 @@ const BrazoCompleto: FC<BrazoCompletoProps> = ({
         <Antebrazo lado={lado} angle={forearmAngle}>
           <Mano 
             lado={lado} 
-            angle={armAngle + forearmAngle + handAngle}
+            angle={handAngle}
           />
         </Antebrazo>
       </BrazoSuperior>

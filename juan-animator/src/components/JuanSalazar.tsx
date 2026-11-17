@@ -24,8 +24,8 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
   mouthState = 0,
   headTilt = 0,
   isTalking = false,
-  leftForearmAngle = 0,
-  rightForearmAngle = 0,  
+  leftForearmAngle ,
+  rightForearmAngle ,  
   leftHandAngle = 0,
   rightHandAngle = 0,
 }) => {
@@ -37,9 +37,9 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
     rightForearmAngle: animatedRightForearmAngle,
   } = useArmGesture(isTalking);
   const effectiveLeftForearmAngle =
-    leftForearmAngle !== undefined ? leftForearmAngle : animatedLeftForearmAngle;
+     leftForearmAngle ?? animatedLeftForearmAngle;
   const effectiveRightForearmAngle =
-    rightForearmAngle !== undefined ? rightForearmAngle : animatedRightForearmAngle;
+    rightForearmAngle ?? animatedRightForearmAngle;
   const naturalHeadTilt = useHeadTilt(true, -8, 8, 1800);
   const effectiveHeadTilt = headTilt + naturalHeadTilt;
 
