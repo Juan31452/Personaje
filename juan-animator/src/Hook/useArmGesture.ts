@@ -8,7 +8,7 @@ export interface ArmAngles {
   rightForearmAngle: number;
 }
 
-const INITIAL_ANGLES: ArmAngles = {
+const REST_POSITION: ArmAngles = {
   leftArmAngle: 0,
   rightArmAngle: 0,
   leftForearmAngle: 0,
@@ -21,46 +21,49 @@ export const useArmGesture = (
   speed = 5000,
   sync = false
 ) => {
-  const [angles, setAngles] = useState<ArmAngles>(INITIAL_ANGLES);
+  const [angles, setAngles] = useState<ArmAngles>(REST_POSITION);
 
   useEffect(() => {
     if (!isActive) {
-      setAngles(INITIAL_ANGLES);
+      setAngles(REST_POSITION);
       return;
     }
 
-    let animationId = 0;
-    let lastUpdate = 0;
+    let animationFrame = 0;
+    let startTime: number | null = null;
 
-    const animate = (timestamp: number) => {
-      if (timestamp - lastUpdate >= 33) {
-        lastUpdate = timestamp;
+    const animate = (time: number) => {
+      if (startTime === null) startTime = time;
 
-        const phase = (timestamp / speed) * Math.PI * 2;
+      const elapsed = time - startTime;
+      const phase = (elapsed / speed) * Math.PI * 2;
 
-        setAngles({
-          leftArmAngle:
-            Math.sin(phase) * intensity * 0.45,
+      // Oscilaciones suaves, sin saltos aleatorios.
+      const leftArm = Math.sin(phase) * intensity * 0.45;
+      const rightArm = sync
+        ? leftArm
+        : Math.sin(phase + 1.2) * intensity * 0.45;
 
-          rightArmAngle: sync
-            ? Math.sin(phase) * intensity * 0.45
-            : Math.sin(phase + 1.5) * intensity * 0.45,
+      const leftForearm =
+        Math.sin(phase + 0.8) * intensity * 0.65;
 
-          leftForearmAngle:
-            Math.sin(phase + 0.7) * intensity * 0.65,
+      const rightForearm = sync
+        ? leftForearm
+        : Math.sin(phase + 2) * intensity * 0.65;
 
-          rightForearmAngle: sync
-            ? Math.sin(phase + 0.7) * intensity * 0.65
-            : Math.sin(phase + 1.8) * intensity * 0.65,
-        });
-      }
+      setAngles({
+        leftArmAngle: leftArm,
+        rightArmAngle: rightArm,
+        leftForearmAngle: leftForearm,
+        rightForearmAngle: rightForearm,
+      });
 
-      animationId = requestAnimationFrame(animate);
+      animationFrame = requestAnimationFrame(animate);
     };
 
-    animationId = requestAnimationFrame(animate);
+    animationFrame = requestAnimationFrame(animate);
 
-    return () => cancelAnimationFrame(animationId);
+    return () => cancelAnimationFrame(animationFrame);
   }, [isActive, intensity, speed, sync]);
 
   return angles;

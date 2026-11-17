@@ -10,6 +10,7 @@ interface BrazoCompletoProps {
   handAngle?: number;       // Muñeca
   scale?: number;           // Escala de profundidad
   translateY?: number;      // Traslación vertical de profundidad
+  handPose?: "relajada" | "señalando"; // Posición de la mano
 }
 
 const BrazoCompleto: FC<BrazoCompletoProps> = ({
@@ -19,6 +20,7 @@ const BrazoCompleto: FC<BrazoCompletoProps> = ({
   handAngle = 0,
   scale = 1,
   translateY = 0,
+  handPose = "relajada",
 }) => {
   const isIzq = lado === "izquierdo";
   
@@ -37,8 +39,9 @@ const BrazoCompleto: FC<BrazoCompletoProps> = ({
       <BrazoSuperior lado={lado} angle={armAngle}>
         <Antebrazo lado={lado} angle={forearmAngle}>
           <Mano 
-            lado={lado} 
+            lado={lado}
             angle={handAngle}
+            pose={handPose}
           />
         </Antebrazo>
       </BrazoSuperior>
