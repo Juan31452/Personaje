@@ -1,36 +1,115 @@
-# React + TypeScript + Vite
+# Juan Animator
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web para crear un avatar animado de Juan Salazar con diálogo, sincronización de boca y exportación a video MP4.
 
-## Video export
+## Descripción
 
-The editor exports the character and dialogue as a 720 × 1280, 24 fps MP4 using H.264 High and AAC stereo (silent audio track). The first export loads the FFmpeg WebAssembly encoder and can take longer. Browsers with the File System Access API let you choose the destination; if writing there fails, the MP4 falls back to the browser's normal download behavior.
+Juan Animator es un editor de personaje en React + TypeScript + Vite que permite:
 
-Currently, two official plugins are available:
+- importar un archivo de audio
+- escribir texto del diálogo
+- sincronizar la animación de la boca con el audio
+- mover la cabeza y los brazos mientras habla
+- exportar el resultado como video MP4 con FFmpeg WebAssembly
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+La interfaz está pensada para que el usuario pueda probar animación y generar un render final desde el navegador.
 
-## React Compiler
+## Tecnologías
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- FFmpeg WebAssembly
+- HTML-to-image
 
-## Expanding the Oxlint configuration
+## Requisitos
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+- Node.js 18 o superior
+- npm o pnpm
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+## Instalación
+
+```bash
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Ejecución en desarrollo
+
+```bash
+npm run dev
+```
+
+Abrir la URL que indique Vite en la terminal, normalmente:
+
+```text
+http://localhost:5173
+```
+
+## Build de producción
+
+```bash
+npm run build
+```
+
+## Exportación de video
+
+La app genera un MP4 con resolución 720×1280, 24 FPS, usando H.264 y audio AAC. La primera exportación puede tardar más tiempo porque carga el encoder de FFmpeg en WebAssembly.
+
+Al hacer clic en "Exportar MP4":
+
+- se prepara el render del personaje
+- se reproduce el audio asociado
+- se captura la escena animada
+- se compone el video final
+
+En navegadores compatibles, puede pedir elegir la ubicación del archivo; si no es posible, descarga el video como archivo normal del navegador.
+
+## Estructura principal
+
+```text
+src/
+  App.tsx
+  components/
+    Dialogo.tsx
+    JuanSalazar.tsx
+  Hook/
+    useArmGesture.ts
+    useAudioMouth.ts
+    useBlink.ts
+    useHeadTilt.ts
+    useTalking.ts
+    useVideoExport.ts
+  parts/
+    Antebrazo.tsx
+    Brazo.tsx
+    BrazoCompleto.tsx
+    BrazoSuperior.tsx
+    Cabeza.tsx
+    Cuello.tsx
+    Mano.tsx
+    Pantalon.tsx
+    Torso.tsx
+    Zapatos.tsx
+  assets/
+    fondo.jpg
+    hero.png
+```
+
+## Scripts disponibles
+
+```bash
+npm run dev     # modo desarrollo
+npm run build   # compila para producción
+npm run preview # vista previa del build
+npm run lint    # análisis con oxlint
+```
+
+## Notas
+
+- El audio y el texto no se guardan en el proyecto.
+- La animación depende del navegador y del soporte de Web APIs para audio y captura.
+- Si el navegador bloquea la reproducción automática del audio, puede requerir una interacción del usuario antes de iniciar el diálogo.
+
+## Autor
+
+Proyecto de animación de personaje para pruebas visuales y exportación de video desde navegador.
