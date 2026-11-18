@@ -7,11 +7,13 @@ Aplicación web para animar el personaje ilustrado de Juan Salazar a partir de u
 - Importar un archivo de audio desde el equipo.
 - Analizar el volumen del audio para animar la apertura de la boca.
 - Mostrar el texto escrito en una burbuja mientras se reproduce el audio.
+- Elegir entre varios gestos del personaje, como señalar, saludar y escuchar.
+- Elegir el movimiento de cabeza: quieto, asentir, negar o balanceo suave.
 - Animar los brazos, inclinar la cabeza y hacer parpadear al personaje.
 - Sustituir la imagen de fondo que aparece detrás del personaje y volver a la original.
 - Exportar la escena animada junto con el audio a un archivo MP4.
 
-El movimiento de la boca responde a la intensidad del sonido; no es una sincronización fonética palabra por palabra. El texto es visual y no se convierte en voz: el audio debe importarse por separado.
+Las manos usan un estilo abierto en los gestos; **Señalando** conserva la postura del brazo con la mano abierta. El movimiento de la boca responde a la intensidad del sonido; no es una sincronización fonética palabra por palabra. El texto es visual y no se convierte en voz: el audio debe importarse por separado.
 
 ## Tecnologías
 
@@ -42,8 +44,9 @@ Abre la dirección que muestre Vite en la terminal, normalmente `http://localhos
 1. Importa un archivo de audio.
 2. Opcionalmente, importa una imagen para usarla detrás del personaje. Puedes volver a la imagen original con **Usar fondo original**.
 3. Escribe el texto que quieras mostrar en la burbuja. Si el campo está vacío, no se muestra.
-4. Selecciona **Hablar** para reproducir el audio y ver la animación.
-5. Selecciona **Exportar MP4** para generar y guardar el video.
+4. Elige un **Gesto del personaje** y un **Movimiento de cabeza** en los menús correspondientes.
+5. Selecciona **Hablar** para reproducir el audio y ver la animación.
+6. Selecciona **Exportar MP4** para generar y guardar el video con el gesto y el movimiento elegidos.
 
 El audio, el texto y la imagen personalizada se mantienen solo en la sesión actual del navegador; no se guardan en el proyecto.
 
@@ -70,6 +73,9 @@ src/
   components/
     Dialogo.tsx
     JuanSalazar.tsx
+  extras/
+    headMovements.ts
+    poses.ts
   Hook/
     useArmGesture.ts
     useAudioMouth.ts
