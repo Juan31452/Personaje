@@ -1,7 +1,7 @@
 
 import type { FC } from "react";
 
-type HandPose = "relajada" | "señalando";
+type HandPose = "abierta" | "relajada" | "señalando" | "saludando";
 
 interface ManoProps {
   lado: "izquierdo" | "derecho";
@@ -12,19 +12,89 @@ interface ManoProps {
 const Mano: FC<ManoProps> = ({
   lado,
   angle = 0,
-  pose = "relajada",
+  pose = "abierta",
 }) => {
   const isIzq = lado === "izquierdo";
+  const isWaving = pose === "saludando";
+  const isOpen = pose === "abierta" || isWaving;
 
   return (
     <g
       id={`mano-${lado}`}
       style={{
-        transformOrigin: isIzq ? "95px 418px" : "305px 418px",
-        transform: `translateY(5px) rotate(${angle}deg) scale(0.8)`,
+        transformOrigin: isOpen
+          ? isIzq
+            ? "100px 412px"
+            : "300px 412px"
+          : isIzq
+            ? "95px 418px"
+            : "305px 418px",
+        transform: `translateY(${isOpen ? 0 : 5}px) rotate(${angle}deg) scale(0.8)`,
       }}
     >
-      {pose === "señalando" ? (
+      {isOpen ? (
+        <g transform={isIzq ? "translate(400 0) scale(-1 1)" : undefined}>
+          <g
+            transform={
+              isWaving
+                ? isIzq
+                  ? "translate(-17 0)"
+                  : "translate(-5 0)"
+                : undefined
+            }
+          >
+            <g
+              transform={
+                isWaving
+                  ? isIzq
+                    ? "translate(630 0) scale(-1 1)"
+                    : undefined
+                  : "translate(0 824) scale(1 -1)"
+              }
+            >
+              <path
+                d="M296 411
+                   Q291 409 293 404
+                   L297 391
+                   Q299 387 303 390
+                   L302 398
+                   L301 377
+                   Q301 372 305 371
+                   Q309 371 310 376
+                   L310 395
+                   L312 373
+                   Q313 368 317 369
+                   Q321 370 320 375
+                   L317 396
+                   L323 378
+                   Q325 374 329 376
+                   Q333 378 331 383
+                   L325 401
+                   L330 389
+                   Q332 385 336 387
+                   Q340 389 337 394
+                   L329 408
+                   Q325 416 316 417
+                   L305 416
+                   Q299 415 296 411 Z"
+                fill="#C98765"
+                stroke="#995E46"
+                strokeWidth="1.5"
+                strokeLinejoin="round"
+              />
+              {!isIzq && isWaving && (
+                <path
+                  d="M303 399 Q306 402 310 400 M316 399 Q320 401 323 398"
+                  fill="none"
+                  stroke="#995E46"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              )}
+            </g>
+          </g>
+        </g>
+      ) : pose === "señalando" ? (
         isIzq ? (
           <g>
             {/* Palma */}

@@ -5,9 +5,41 @@ import "./App.css";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useAudioMouth } from "./Hook/useAudioMouth";
 import { useVideoExport } from "./Hook/useVideoExport";
+import {
+  HEAD_MOVEMENTS,
+  type HeadMovementName,
+} from "./extras/headMovements";
+import type { PoseName } from "./extras/poses";
+
+const GESTURE_OPTIONS: { value: PoseName; label: string }[] = [
+  { value: "idle", label: "Reposo" },
+  { value: "thinking", label: "Pensando" },
+  { value: "corazon", label: "Corazón (mano en el pecho)" },
+  { value: "armsCrossed", label: "Manos cruzadas sobre el pecho" },
+  { value: "raisedEyebrows", label: "Alzando las cejas" },
+  { value: "pointing", label: "Señalando" },
+  { value: "waving", label: "Saludando" },
+  { value: "shrug", label: "Encogerse de hombros" },
+  { value: "explaining", label: "Explicando" },
+  { value: "stop", label: "Pedir que se detenga" },
+  { value: "listening", label: "Escuchando" },
+];
+
+const isPoseName = (value: string): value is PoseName =>
+  GESTURE_OPTIONS.some((option) => option.value === value);
+
+const HEAD_MOVEMENT_OPTIONS = Object.entries(HEAD_MOVEMENTS).map(
+  ([value, movement]) => ({ value, label: movement.label }),
+);
+
+const isHeadMovementName = (value: string): value is HeadMovementName =>
+  Object.prototype.hasOwnProperty.call(HEAD_MOVEMENTS, value);
 
 function App() {
   const [dialogo, setDialogo] = useState("");
+  const [gesture, setGesture] = useState<PoseName>("idle");
+  const [headMovement, setHeadMovement] =
+    useState<HeadMovementName>("sway");
   const [mostrarDialogo, setMostrarDialogo] = useState(false);
   const [audioError, setAudioError] = useState("");
   const [audioDurationMs, setAudioDurationMs] = useState(0);
@@ -98,6 +130,16 @@ function App() {
     void iniciarDialogo().catch(() => undefined);
   };
 
+  const cambiarGesto = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextGesture = event.currentTarget.value;
+    if (isPoseName(nextGesture)) setGesture(nextGesture);
+  };
+
+  const cambiarMovimientoCabeza = (event: ChangeEvent<HTMLSelectElement>) => {
+    const nextMovement = event.currentTarget.value;
+    if (isHeadMovementName(nextMovement)) setHeadMovement(nextMovement);
+  };
+
   const {
     exportVideo,
     isExporting,
@@ -185,6 +227,34 @@ function App() {
             disabled={isExporting}
           />
         </label>
+        <label className="editor-field">
+          <span>Gesto del personaje</span>
+          <select
+            value={gesture}
+            onChange={cambiarGesto}
+            disabled={isExporting}
+          >
+            {GESTURE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="editor-field">
+          <span>Movimiento de cabeza</span>
+          <select
+            value={headMovement}
+            onChange={cambiarMovimientoCabeza}
+            disabled={isExporting}
+          >
+            {HEAD_MOVEMENT_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           onClick={hablar}
           disabled={
@@ -215,6 +285,8 @@ function App() {
             mouthState={mouthState}
             isTalking={mostrarDialogo}
             backgroundImageUrl={backgroundImageUrl || undefined}
+            gesture={gesture}
+            headMovement={headMovement}
           />
         </div>
         {(audioError ||

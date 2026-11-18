@@ -23,7 +23,8 @@
 }
 
 .editor-field input,
-.editor-field textarea {
+.editor-field textarea,
+.editor-field select {
   width: 100%;
   box-sizing: border-box;
   font: inherit;

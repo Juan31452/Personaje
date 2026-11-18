@@ -3,6 +3,9 @@ import fondo from "../assets/fondo.jpg";
 import { useBlink } from "../Hook/useBlink";
 import { useArmGesture } from "../Hook/useArmGesture";
 import { useHeadTilt } from "../Hook/useHeadTilt";
+import { useGesture } from "../Hook/useGesture";
+import type { HeadMovementName } from "../extras/headMovements";
+import type { Pose, PoseName } from "../extras/poses";
 import Cabeza from "../parts/Cabeza";
 import Cuello from "../parts/Cuello";
 import Torso from "../parts/Torso";
@@ -13,44 +16,52 @@ import BrazoCompleto from "../parts/BrazoCompleto";
 interface JuanSalazarProps {
   mouthState?: number;
   backgroundImageUrl?: string;
+  headMovement?: HeadMovementName;
   headTilt?: number;
+  leftArmAngle?: number;
+  rightArmAngle?: number;
   isTalking?: boolean;
   leftForearmAngle?: number;
   rightForearmAngle?: number;
   leftHandAngle?: number;
   rightHandAngle?: number;
+  gesture?: PoseName;
+  customGesture?: Partial<Pose>;
 }
 
 const JuanSalazar: FC<JuanSalazarProps> = ({
   mouthState = 0,
   backgroundImageUrl = fondo,
-  headTilt = 0,
+  headMovement = "sway",
+  headTilt,
+  leftArmAngle,
+  rightArmAngle,
   isTalking = false,
-  leftForearmAngle ,
-  rightForearmAngle ,  
-  leftHandAngle = 0,
-  rightHandAngle = 0,
+  leftForearmAngle,
+  rightForearmAngle,
+  leftHandAngle,
+  rightHandAngle,
+  gesture,
+  customGesture,
 }) => {
+  const gestureAngles = useGesture({ pose: gesture, custom: customGesture });
+  const talkingAngles = useArmGesture(isTalking);
   const isBlinking = useBlink();
-  const {
-    leftArmAngle,
-    rightArmAngle,
-    leftForearmAngle: animatedLeftForearmAngle,
-    rightForearmAngle: animatedRightForearmAngle,
-  } = useArmGesture(isTalking);
-
-   const effectiveLeftForearmAngle =
-    leftForearmAngle !== undefined
-      ? leftForearmAngle
-      : animatedLeftForearmAngle;
-
-    const effectiveRightForearmAngle =
-    rightForearmAngle !== undefined
-      ? rightForearmAngle
-      : animatedRightForearmAngle;
-  
-  const naturalHeadTilt = useHeadTilt(true, -8, 8, 1800);
-  const effectiveHeadTilt = headTilt + naturalHeadTilt;
+  const headMovementFrame = useHeadTilt(headMovement);
+  const effectiveLeftArmAngle =
+    leftArmAngle ?? gestureAngles.leftArmAngle + talkingAngles.leftArmAngle;
+  const effectiveRightArmAngle =
+    rightArmAngle ?? gestureAngles.rightArmAngle + talkingAngles.rightArmAngle;
+  const effectiveLeftForearmAngle =
+    leftForearmAngle ??
+    gestureAngles.leftForearmAngle + talkingAngles.leftForearmAngle;
+  const effectiveRightForearmAngle =
+    rightForearmAngle ??
+    gestureAngles.rightForearmAngle + talkingAngles.rightForearmAngle;
+  const effectiveLeftHandAngle = leftHandAngle ?? gestureAngles.leftHandAngle;
+  const effectiveRightHandAngle = rightHandAngle ?? gestureAngles.rightHandAngle;
+  const effectiveHeadTilt =
+    (headTilt ?? gestureAngles.headTilt) + headMovementFrame.rotation;
 
   return (
     <svg
@@ -80,63 +91,36 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
         opacity="0.5"
       />
 
-      {/* =========================
-          ORDEN DE CAPAS (de atrás hacia adelante)
-      ========================= */}
-
-      {/* 1. Piernas y zapatos (fondo) */}
       <Pantalon />
       <Zapatos />
-
-      {/* 2. Torso */}
       <Torso />
-
-      {/* 3. Cuello */}
       <Cuello />
-
-      {/* 4. Brazos y manos, unidos para compartir el movimiento del brazo */}
-      <g
-        style={{
-          transformOrigin: "140px 280px",
-          transform: `rotate(${leftArmAngle}deg)`,
-        }}
-      >
-        {/* 4. Brazos articulados */}
       <BrazoCompleto
         lado="izquierdo"
-        armAngle={leftArmAngle}
+        armAngle={effectiveLeftArmAngle}
         forearmAngle={effectiveLeftForearmAngle}
-        handAngle={leftHandAngle}
+        handAngle={effectiveLeftHandAngle}
+        handPose={gesture === "waving" ? "saludando" : "abierta"}
       />
-
-
-
-      </g>
-      <g
-        style={{
-          transformOrigin: "260px 280px",
-          transform: `rotate(${rightArmAngle}deg)`,
-        }}
-      >
-
       <BrazoCompleto
         lado="derecho"
-        armAngle={rightArmAngle}
+        armAngle={effectiveRightArmAngle}
         forearmAngle={effectiveRightForearmAngle}
-        handAngle={rightHandAngle}
-        handPose="relajada"
+        handAngle={effectiveRightHandAngle}
+        handPose={gesture === "waving" ? "saludando" : "abierta"}
       />
-      </g>
-
-      {/* 6. Cabeza (al frente, con rotación) */}
       <g
         id="cabeza-grupo"
         style={{
           transformOrigin: "200px 270px",
-          transform: `rotate(${effectiveHeadTilt}deg)`,
+          transform: `translateY(${headMovementFrame.verticalOffset}px) rotate(${effectiveHeadTilt}deg)`,
         }}
       >
-        <Cabeza isBlinking={isBlinking} mouthState={mouthState} />
+        <Cabeza
+          isBlinking={isBlinking}
+          mouthState={mouthState}
+          eyebrowRaise={gestureAngles.eyebrowRaise}
+        />
       </g>
       </g>
     </svg>

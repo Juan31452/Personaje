@@ -3,11 +3,13 @@ import type { FC } from "react";
 interface CabezaProps {
   isBlinking?: boolean;
   mouthState?: number;
+  eyebrowRaise?: number;
 }
 
 const Cabeza: FC<CabezaProps> = ({
   isBlinking = false,
   mouthState = 0,
+  eyebrowRaise = 0,
 }) => {
   return (
     <g id="cabeza">
@@ -19,8 +21,10 @@ const Cabeza: FC<CabezaProps> = ({
       <ellipse cx="300" cy="175" rx="16" ry="23" fill="#DDA17A" />
 
       {/* Cejas */}
-      <path d="M135 115 Q155 102 180 115" stroke="#292929" strokeWidth="8" strokeLinecap="round" fill="none" />
-      <path d="M220 115 Q245 102 265 115" stroke="#292929" strokeWidth="8" strokeLinecap="round" fill="none" />
+      <g transform={`translate(0 ${-eyebrowRaise})`}>
+        <path d="M135 115 Q155 102 180 115" stroke="#292929" strokeWidth="8" strokeLinecap="round" fill="none" />
+        <path d="M220 115 Q245 102 265 115" stroke="#292929" strokeWidth="8" strokeLinecap="round" fill="none" />
+      </g>
 
       {/* Ojos */}
       {isBlinking ? (
