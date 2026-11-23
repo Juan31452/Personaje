@@ -71,25 +71,25 @@ export const POSES = {
   // 👉 Señalar con índice derecho
   pointing: {
     leftArmAngle: 0,
-    rightArmAngle: -60,      // Eleva el brazo desde el hombro
+    rightArmAngle: -60,
     leftForearmAngle: 0,
-    rightForearmAngle: -40,  // Dobla el codo al elevarlo
+    rightForearmAngle: -30,
     leftHandAngle: 0,
-    rightHandAngle: -20,     // Mano apunta
+    rightHandAngle: 120,
     headTilt: 5,
   },
 
   // 👋 Saludar
   waving: {
     leftArmAngle: 0,
-    rightArmAngle: -35,      // Levanta el brazo hacia el lado
+    rightArmAngle: -35,
     leftForearmAngle: 0,
-    rightForearmAngle: -125, // Dobla el codo hacia abajo y eleva la mano
-    leftHandAngle: 180,      // Deja los dedos hacia abajo sin inclinación
-    rightHandAngle: 160,     // Orienta la palma hacia el frente
+    rightForearmAngle: -125,
+    leftHandAngle: 180,
+    rightHandAngle: 160,
     headTilt: 5,
   },
-
+  
   // 🤷 Encoger hombros (no sé)
   shrug: {
     leftArmAngle: -20,
@@ -133,6 +133,18 @@ export const POSES = {
     rightHandAngle: 20,
     headTilt: 8,
   },
+
+  // 🖐️ Presentando / Explicando (mano curvada cerca del pecho, como en la referencia)
+  presenting: {
+    leftArmAngle: -22,        // Baja un poco el brazo para dar espacio lateral
+    rightArmAngle: 0,
+    leftForearmAngle: -105,    // Abre el ángulo del codo (antes -105) para alejar la mano del pecho
+    rightForearmAngle: 0,
+    leftHandAngle: -10,       // Endereza la mano para que los dedos apunten hacia arriba/adentro
+    rightHandAngle: 0,
+    headTilt: 3,
+  },
+
 } satisfies Record<string, Pose>;
 
 export type PoseName = keyof typeof POSES;

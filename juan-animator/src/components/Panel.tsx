@@ -17,6 +17,7 @@ const GESTURE_OPTIONS: { value: PoseName; label: string }[] = [
   { value: "explaining", label: "Explicando" },
   { value: "stop", label: "Pedir que se detenga" },
   { value: "listening", label: "Escuchando" },
+  { value: "presenting", label: "Presentando" },
 ];
 
 const CAMERA_VIEW_OPTIONS: { value: CameraViewName; label: string }[] = [
@@ -38,7 +39,10 @@ const HEAD_MOVEMENT_OPTIONS = Object.entries(HEAD_MOVEMENTS).map(
 
 interface PanelProps {
   dialogo: string;
-  gesture: PoseName;
+  selectedGestures: PoseName[];
+  isPlayingGestures: boolean;
+  gestureSequenceStep: number;
+  gestureSequenceLength: number;
   cameraView: CameraViewName;
   headMovement: HeadMovementName;
   audioFileName: string;
@@ -46,7 +50,9 @@ interface PanelProps {
   exportProgress: number;
   canPlayAudio: boolean;
   onDialogChange: (value: string) => void;
-  onGestureChange: (value: PoseName) => void;
+  onToggleGesture: (value: PoseName) => void;
+  onPlayGestureSequence: () => void;
+  onStopGestureSequence: () => void;
   onCameraViewChange: (value: CameraViewName) => void;
   onHeadMovementChange: (value: HeadMovementName) => void;
   onImportAudio: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -58,7 +64,10 @@ interface PanelProps {
 
 const Panel: FC<PanelProps> = ({
   dialogo,
-  gesture,
+  selectedGestures,
+  isPlayingGestures,
+  gestureSequenceStep,
+  gestureSequenceLength,
   cameraView,
   headMovement,
   audioFileName,
@@ -66,7 +75,9 @@ const Panel: FC<PanelProps> = ({
   exportProgress,
   canPlayAudio,
   onDialogChange,
-  onGestureChange,
+  onToggleGesture,
+  onPlayGestureSequence,
+  onStopGestureSequence,
   onCameraViewChange,
   onHeadMovementChange,
   onImportAudio,
@@ -75,13 +86,6 @@ const Panel: FC<PanelProps> = ({
   onTalk,
   onExport,
 }) => {
-  const cambiarGesto = (event: ChangeEvent<HTMLSelectElement>) => {
-    const value = GESTURE_OPTIONS.find(
-      (option) => option.value === event.currentTarget.value,
-    );
-    if (value) onGestureChange(value.value);
-  };
-
   const cambiarVistaCamara = (event: ChangeEvent<HTMLSelectElement>) => {
     const value = CAMERA_VIEW_OPTIONS.find(
       (option) => option.value === event.currentTarget.value,
@@ -132,20 +136,48 @@ const Panel: FC<PanelProps> = ({
           disabled={isExporting}
         />
       </label>
-      <label className="editor-field">
-        <span>Gesto del personaje</span>
-        <select
-          value={gesture}
-          onChange={cambiarGesto}
-          disabled={isExporting}
-        >
-          {GESTURE_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <fieldset
+        className="editor-gesture-field"
+        disabled={isExporting || isPlayingGestures}
+      >
+        <legend>Gestos del personaje</legend>
+        <small className="editor-note">
+          Selecciona varios; se reproducen en el orden en que los marques.
+        </small>
+        <div className="gesture-options">
+          {GESTURE_OPTIONS.map(({ value, label }) => {
+            const order = selectedGestures.indexOf(value);
+            return (
+              <label className="gesture-option" key={value}>
+                <input
+                  type="checkbox"
+                  checked={order !== -1}
+                  onChange={() => onToggleGesture(value)}
+                />
+                <span>{order === -1 ? label : `${order + 1}. ${label}`}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+      <button
+        onClick={onPlayGestureSequence}
+        disabled={
+          isExporting || isPlayingGestures || selectedGestures.length === 0
+        }
+      >
+        Reproducir gestos
+      </button>
+      {isPlayingGestures && (
+        <>
+          <small className="editor-note" role="status">
+            Reproduciendo paso {gestureSequenceStep} de {gestureSequenceLength}
+          </small>
+          <button onClick={onStopGestureSequence} disabled={isExporting}>
+            Detener gestos
+          </button>
+        </>
+      )}
       <label className="editor-field">
         <span>Estilo de cámara</span>
         <select

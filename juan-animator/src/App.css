@@ -1,7 +1,7 @@
 
 .video-editor {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: 360px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -20,6 +20,49 @@
   gap: 8px;
   color: #fff;
   font-size: 15px;
+}
+
+.editor-gesture-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #fff;
+  font-size: 15px;
+}
+
+.editor-gesture-field legend {
+  padding: 0;
+}
+
+.gesture-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.gesture-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gesture-option input {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  accent-color: #9dc3e6;
 }
 
 .editor-field input,

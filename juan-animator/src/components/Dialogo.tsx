@@ -8,6 +8,31 @@ interface DialogoProps {
   posicion?: "arriba" | "abajo" | "izquierda" | "derecha";
 }
 
+export const dividirDialogos = (texto: string, palabrasPorFragmento = 12) => {
+  const parrafos = texto
+    .split(/\n+/)
+    .map((parrafo) => parrafo.trim())
+    .filter(Boolean);
+  const fragmentos: string[] = [];
+
+  for (const parrafo of parrafos) {
+    const frases = parrafo.match(/[^.!?]+(?:[.!?]+["')\]]*|$)/g) ?? [parrafo];
+
+    for (const frase of frases) {
+      const palabras = frase.trim().split(/\s+/).filter(Boolean);
+      for (let indice = 0; indice < palabras.length; indice += palabrasPorFragmento) {
+        const fragmento = palabras
+          .slice(indice, indice + palabrasPorFragmento)
+          .join(" ")
+          .trim();
+        if (fragmento) fragmentos.push(fragmento);
+      }
+    }
+  }
+
+  return fragmentos;
+};
+
 export const obtenerProgresoDialogo = (
   dialogos: string[],
   tiempoActualMs: number,
@@ -17,10 +42,30 @@ export const obtenerProgresoDialogo = (
     return { dialogoIndex: 0, palabraIndex: 0 };
   }
 
-  const pesos = dialogos.map((texto) =>
-    Math.max(8, texto.split(/\s+/).filter(Boolean).length),
+  const palabrasPorDialogo = dialogos.map((texto) =>
+    texto.split(/\s+/).filter(Boolean),
+  );
+  const pesosPorDialogo = palabrasPorDialogo.map((palabras) =>
+    palabras.map((palabra) => {
+      const silabasAproximadas =
+        palabra.match(/[aeiouáéíóúü]+/gi)?.length ?? 0;
+      const pausa = /[.!?…]["')\]]*$/.test(palabra)
+        ? 1.2
+        : /[,;:]["')\]]*$/.test(palabra)
+          ? 0.6
+          : 0;
+      return Math.max(1, silabasAproximadas) + pausa;
+    }),
+  );
+  const pesos = pesosPorDialogo.map((pesosPalabras) =>
+    pesosPalabras.reduce((total, peso) => total + peso, 0),
   );
   const pesoTotal = pesos.reduce((total, peso) => total + peso, 0);
+
+  if (pesoTotal <= 0) {
+    return { dialogoIndex: 0, palabraIndex: 0 };
+  }
+
   const pesoObjetivo =
     (Math.min(Math.max(tiempoActualMs, 0), duracionMs) / duracionMs) *
     pesoTotal;
@@ -30,13 +75,24 @@ export const obtenerProgresoDialogo = (
     const pesoAnterior = pesoAcumulado;
     pesoAcumulado += pesos[indice];
     if (pesoObjetivo < pesoAcumulado || indice === pesos.length - 1) {
-      const palabras = dialogos[indice].split(/\s+/).filter(Boolean).length;
-      const progreso =
-        (pesoObjetivo - pesoAnterior) / (pesoAcumulado - pesoAnterior);
-
+      // Corregido: empieza en 0 porque pesoPalabraObjetivo ya es relativo al diálogo actual
+      let pesoPalabraAcumulado = 0;
+      const pesoPalabraObjetivo = pesoObjetivo - pesoAnterior;
+      const palabras = pesosPorDialogo[indice];
+      const palabraIndex = palabras.findIndex((peso, palabraIndice) => {
+        const siguientePeso = pesoPalabraAcumulado + peso;
+        if (
+          pesoPalabraObjetivo < siguientePeso ||
+          palabraIndice === palabras.length - 1
+        ) {
+          return true;
+        }
+        pesoPalabraAcumulado = siguientePeso;
+        return false;
+      });
       return {
         dialogoIndex: indice,
-        palabraIndex: Math.min(Math.floor(progreso * palabras), palabras - 1),
+        palabraIndex: Math.max(0, palabraIndex),
       };
     }
   }
@@ -55,29 +111,30 @@ const Dialogo: FC<DialogoProps> = ({
 
   const palabras = texto.split(/\s+/).filter(Boolean);
 
-  const posiciones = {
-    arriba: { top: "-5px", left: "50%", transform: "translateX(-50%)" },
-    abajo: { top: "calc(100% + 20px)", left: "50%", transform: "translateX(-50%)" },
-    izquierda: { left: "-30px", top: "36%", transform: "translateY(-50%)" },
+    const posiciones = {
+    arriba: { top: "12px", left: "50%", transform: "translateX(-50%)" },
+    abajo: { bottom: "12px", left: "50%", transform: "translateX(-50%)" },
+    izquierda: { right: "calc(100% + 30px)", top: "36%", transform: "translateY(-50%)" },
     derecha: { left: "calc(100% + 30px)", top: "36%", transform: "translateY(-50%)" },
   };
 
+  // Corregido: dirección de los triángulos apuntando hacia el personaje
   const puntas = {
     arriba: {
       left: "50%",
-      bottom: "-10px",
+      bottom: "-15px",
       transform: "translateX(-50%)",
       borderLeft: "15px solid transparent",
       borderRight: "15px solid transparent",
-      borderTop: "15px solid rgba(255, 255, 255, 0.35)",
+      borderTop: "15px solid #2C3E50",
     },
     abajo: {
       left: "50%",
-      top: "-10px",
+      top: "-15px",
       transform: "translateX(-50%)",
       borderLeft: "15px solid transparent",
       borderRight: "15px solid transparent",
-      borderBottom: "15px solid rgba(255, 255, 255, 0.35)",
+      borderBottom: "15px solid #2C3E50",
     },
     izquierda: {
       top: "50%",
@@ -85,7 +142,7 @@ const Dialogo: FC<DialogoProps> = ({
       transform: "translateY(-50%)",
       borderTop: "15px solid transparent",
       borderBottom: "15px solid transparent",
-      borderRight: "15px solid rgba(255, 255, 255, 0.35)",
+      borderLeft: "15px solid #2C3E50",
     },
     derecha: {
       top: "50%",
@@ -93,7 +150,7 @@ const Dialogo: FC<DialogoProps> = ({
       transform: "translateY(-50%)",
       borderTop: "15px solid transparent",
       borderBottom: "15px solid transparent",
-      borderLeft: "15px solid rgba(255, 255, 255, 0.35)",
+      borderRight: "15px solid #2C3E50",
     },
   };
 
@@ -108,7 +165,8 @@ const Dialogo: FC<DialogoProps> = ({
     >
       <div
         style={{
-          background: "rgba(255, 255, 255, 0.35)",
+          background: "rgba(255, 255, 255, 0.85)",
+          backdropFilter: "blur(6px)",
           border: "3px solid #2C3E50",
           borderRadius: "24px",
           padding: "18px 24px",

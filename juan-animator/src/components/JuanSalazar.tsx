@@ -1,10 +1,13 @@
-import type { FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import fondo from "../assets/fondo.jpg";
 import { useBlink } from "../Hook/useBlink";
 import { useCamera } from "../Hook/useCamera";
 import { useArmGesture } from "../Hook/useArmGesture";
 import { useHeadTilt } from "../Hook/useHeadTilt";
-import { useGesture } from "../Hook/useGesture";
+import {
+  GESTURE_TRANSITION_DURATION,
+  useGesture,
+} from "../Hook/useGesture";
 import type { HeadMovementName } from "../extras/headMovements";
 import type { Pose, PoseName } from "../extras/poses";
 import type { CameraView, CameraViewName } from "./camera";
@@ -29,6 +32,7 @@ interface JuanSalazarProps {
   rightHandAngle?: number;
   gesture?: PoseName;
   customGesture?: Partial<Pose>;
+  gestureTransitionDuration?: number;
   cameraView?: CameraViewName;
   customCamera?: Partial<CameraView>;
 }
@@ -47,10 +51,15 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
   rightHandAngle,
   gesture,
   customGesture,
+  gestureTransitionDuration,
   cameraView,
   customCamera,
 }) => {
-  const gestureAngles = useGesture({ pose: gesture, custom: customGesture });
+  const gestureAngles = useGesture({
+    pose: gesture,
+    custom: customGesture,
+    transitionDuration: gestureTransitionDuration,
+  });
   const talkingAngles = useArmGesture(isTalking);
   const isBlinking = useBlink();
   const headMovementFrame = useHeadTilt(headMovement);
@@ -68,6 +77,24 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
   const effectiveRightHandAngle = rightHandAngle ?? gestureAngles.rightHandAngle;
   const effectiveHeadTilt =
     (headTilt ?? gestureAngles.headTilt) + headMovementFrame.rotation;
+  const [rightHandPose, setRightHandPose] = useState<
+    "abierta" | "señalando" | "saludando"
+  >("abierta");
+  const handShapeDelay =
+    (gestureTransitionDuration ?? GESTURE_TRANSITION_DURATION) * 0.65;
+
+  useEffect(() => {
+    if (gesture === "waving") {
+      setRightHandPose("saludando");
+      return;
+    }
+
+    const timer = window.setTimeout(
+      () => setRightHandPose(gesture === "pointing" ? "señalando" : "abierta"),
+      handShapeDelay,
+    );
+    return () => window.clearTimeout(timer);
+  }, [gesture, handShapeDelay]);
 
   const camera = useCamera({ view: cameraView, custom: customCamera });
 
@@ -117,7 +144,7 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
             armAngle={effectiveRightArmAngle}
             forearmAngle={effectiveRightForearmAngle}
             handAngle={effectiveRightHandAngle}
-            handPose={gesture === "waving" ? "saludando" : "abierta"}
+            handPose={rightHandPose}
           />
           <g
             id="cabeza-grupo"

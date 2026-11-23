@@ -1,30 +1,133 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AudioManager from "./components/AudioManager";
 import Dialogo from "./components/Dialogo";
 import JuanSalazar from "./components/JuanSalazar";
 import Panel from "./components/Panel";
 import "./App.css";
+import { GESTURE_TRANSITION_DURATION } from "./Hook/useGesture";
 import type { CameraViewName } from "./components/camera";
 import type { HeadMovementName } from "./extras/headMovements";
 import type { PoseName } from "./extras/poses";
 
 function App() {
   const [dialogo, setDialogo] = useState("");
-  const [gesture, setGesture] = useState<PoseName>("idle");
-  const [cameraView, setCameraView] = useState<CameraViewName>("front");
+  const [selectedGestures, setSelectedGestures] = useState<PoseName[]>([]);
+  const [gestureSequence, setGestureSequence] = useState<PoseName[]>([]);
+  const [gestureSequenceIndex, setGestureSequenceIndex] = useState(0);
+  const [isPlayingGestures, setIsPlayingGestures] = useState(false);
+  const [isGestureSequenceSynced, setIsGestureSequenceSynced] =
+    useState(false);
+  const [cameraView, setCameraView] = useState<CameraViewName>("closeUp");
   const [headMovement, setHeadMovement] =
     useState<HeadMovementName>("sway");
   const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
   const [backgroundError, setBackgroundError] = useState("");
   const characterRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (
+      !isPlayingGestures ||
+      isGestureSequenceSynced ||
+      gestureSequenceIndex >= gestureSequence.length
+    )
+      return;
+
+    const timer = window.setTimeout(
+      () => {
+        if (gestureSequenceIndex + 1 >= gestureSequence.length) {
+          setIsPlayingGestures(false);
+          setGestureSequenceIndex(0);
+        } else {
+          setGestureSequenceIndex((index) => index + 1);
+        }
+      },
+      GESTURE_TRANSITION_DURATION,
+    );
+    return () => window.clearTimeout(timer);
+  }, [
+    gestureSequence,
+    gestureSequenceIndex,
+    isGestureSequenceSynced,
+    isPlayingGestures,
+  ]);
+
+  const toggleGesture = (pose: PoseName) => {
+    setSelectedGestures((selected) =>
+      selected.includes(pose)
+        ? selected.filter((item) => item !== pose)
+        : [...selected, pose],
+    );
+  };
+
+  const playGestureSequence = (syncToDialogue = false) => {
+    if (selectedGestures.length === 0) {
+      setGestureSequence([]);
+      setGestureSequenceIndex(0);
+      setIsPlayingGestures(false);
+      setIsGestureSequenceSynced(false);
+      return;
+    }
+    setGestureSequence([...selectedGestures]);
+    setGestureSequenceIndex(0);
+    setIsGestureSequenceSynced(syncToDialogue);
+    setIsPlayingGestures(true);
+  };
+
+  const stopGestureSequence = () => {
+    setIsPlayingGestures(false);
+    setIsGestureSequenceSynced(false);
+    setGestureSequenceIndex(0);
+  };
+
   return (
-    <AudioManager dialogo={dialogo} targetRef={characterRef}>
-      {(audio) => (
+    <AudioManager
+      dialogo={dialogo}
+      targetRef={characterRef}
+      backgroundImageUrl={backgroundImageUrl}
+    >
+      {(audio) => {
+        const isDialogueSequenceComplete =
+          isGestureSequenceSynced &&
+          !audio.isAudioPlaying &&
+          audio.audioDurationMs > 0 &&
+          audio.audioCurrentTimeMs >= audio.audioDurationMs;
+        const isGestureSequenceActive =
+          isPlayingGestures &&
+          (!isGestureSequenceSynced || audio.isAudioPlaying);
+        const currentGestureIndex =
+          isGestureSequenceSynced && audio.audioDurationMs > 0
+            ? Math.min(
+                gestureSequence.length - 1,
+                Math.floor(
+                  (audio.audioCurrentTimeMs / audio.audioDurationMs) *
+                    gestureSequence.length,
+                ),
+              )
+            : gestureSequenceIndex;
+        const gesture: PoseName = isGestureSequenceActive
+          ? (gestureSequence[currentGestureIndex] ?? "idle")
+          : isDialogueSequenceComplete
+            ? (gestureSequence[gestureSequence.length - 1] ?? "idle")
+            : "idle";
+        const gestureTransitionDuration = isDialogueSequenceComplete
+          ? 0
+          : isGestureSequenceSynced && isGestureSequenceActive
+            ? Math.max(
+                1,
+                audio.audioDurationMs / gestureSequence.length,
+              )
+            : GESTURE_TRANSITION_DURATION;
+
+        return (
         <div className="video-editor">
           <Panel
             dialogo={dialogo}
-            gesture={gesture}
+            selectedGestures={selectedGestures}
+            isPlayingGestures={isGestureSequenceActive}
+            gestureSequenceStep={
+              isGestureSequenceActive ? currentGestureIndex + 1 : 0
+            }
+            gestureSequenceLength={gestureSequence.length}
             cameraView={cameraView}
             headMovement={headMovement}
             audioFileName={audio.audioFileName}
@@ -32,14 +135,22 @@ function App() {
             exportProgress={audio.exportProgress}
             canPlayAudio={audio.canPlayAudio}
             onDialogChange={setDialogo}
-            onGestureChange={setGesture}
+            onToggleGesture={toggleGesture}
+            onPlayGestureSequence={playGestureSequence}
+            onStopGestureSequence={stopGestureSequence}
             onCameraViewChange={setCameraView}
             onHeadMovementChange={setHeadMovement}
             onImportAudio={audio.onImportAudio}
             onImageChange={setBackgroundImageUrl}
             onImageErrorChange={setBackgroundError}
-            onTalk={audio.onTalk}
-            onExport={audio.onExport}
+            onTalk={() => {
+              audio.onTalk();
+              playGestureSequence(true);
+            }}
+            onExport={() => {
+              playGestureSequence(true);
+              audio.onExport();
+            }}
           />
 
           <main className="editor-canvas">
@@ -58,6 +169,7 @@ function App() {
                 isTalking={audio.isTalking}
                 backgroundImageUrl={backgroundImageUrl || undefined}
                 gesture={gesture}
+                gestureTransitionDuration={gestureTransitionDuration}
                 cameraView={cameraView}
                 headMovement={headMovement}
               />
@@ -91,7 +203,8 @@ function App() {
             )}
           </main>
         </div>
-      )}
+        );
+      }}
     </AudioManager>
   );
 }

@@ -1,7 +1,7 @@
-
 import type { FC } from "react";
 
-type HandPose = "abierta" | "relajada" | "señalando" | "saludando";
+export type HandPose = "abierta" | "relajada" | "señalando" | "saludando" | "presentando";
+
 
 interface ManoProps {
   lado: "izquierdo" | "derecho";
@@ -17,169 +17,124 @@ const Mano: FC<ManoProps> = ({
   const isIzq = lado === "izquierdo";
   const isWaving = pose === "saludando";
   const isOpen = pose === "abierta" || isWaving;
+  const openHandTransform = isWaving
+    ? isIzq
+      ? "translate(-15, -5) scale(1.25)"
+      : "translate(-10, -5) scale(1.25)"
+    : isIzq
+      ? "translate(-10, 5) scale(1.25, -1.25)"
+      : "translate(-15, 5) scale(1.25, -1.25)";
+  //const relaxedHandTransform = "scale(1.2) translate(-7.5, 1)";
+
+  // El antebrazo termina en estas coordenadas para ambos lados.
+  const pivotX = isIzq ? 100 : 300;
+  const pivotY = 412;
+  const mirrorX = isIzq ? -1 : 1;
 
   return (
     <g
       id={`mano-${lado}`}
-      style={{
-        transformOrigin: isOpen
-          ? isIzq
-            ? "100px 412px"
-            : "300px 412px"
-          : isIzq
-            ? "95px 418px"
-            : "305px 418px",
-        transform: `translateY(${isOpen ? 0 : 5}px) rotate(${angle}deg) scale(0.8)`,
-      }}
+      transform={`translate(${pivotX}, ${pivotY}) rotate(${angle}) scale(${mirrorX * 0.8}, 0.8)`}
     >
-      {isOpen ? (
-        <g transform={isIzq ? "translate(400 0) scale(-1 1)" : undefined}>
-          <g
-            transform={
-              isWaving
-                ? isIzq
-                  ? "translate(-17 0)"
-                  : "translate(-5 0)"
-                : undefined
-            }
-          >
-            <g
-              transform={
-                isWaving
-                  ? isIzq
-                    ? "translate(630 0) scale(-1 1)"
-                    : undefined
-                  : "translate(0 824) scale(1 -1)"
-              }
-            >
-              <path
-                d="M296 411
-                   Q291 409 293 404
-                   L297 391
-                   Q299 387 303 390
-                   L302 398
-                   L301 377
-                   Q301 372 305 371
-                   Q309 371 310 376
-                   L310 395
-                   L312 373
-                   Q313 368 317 369
-                   Q321 370 320 375
-                   L317 396
-                   L323 378
-                   Q325 374 329 376
-                   Q333 378 331 383
-                   L325 401
-                   L330 389
-                   Q332 385 336 387
-                   Q340 389 337 394
-                   L329 408
-                   Q325 416 316 417
-                   L305 416
-                   Q299 415 296 411 Z"
-                fill="#C98765"
-                stroke="#995E46"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-              {!isIzq && isWaving && (
-                <path
-                  d="M303 399 Q306 402 310 400 M316 399 Q320 401 323 398"
-                  fill="none"
-                  stroke="#995E46"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              )}
-            </g>
-          </g>
-        </g>
-      ) : pose === "señalando" ? (
-        isIzq ? (
-          <g>
-            {/* Palma */}
+      {/* 1. ABIERTA O SALUDANDO */}
+       {isOpen && (
+        <g transform={openHandTransform}>
+          <path
+            d="M -4 -1 Q -9 -3 -7 -8 L -3 -21 Q -1 -25 3 -22 L 2 -14 L 1 -35 Q 1 -40 5 -41 Q 9 -41 10 -36 L 10 -17 L 12 -39 Q 13 -44 17 -43 Q 21 -42 20 -37 L 17 -16 L 23 -34 Q 25 -38 29 -36 Q 33 -34 31 -29 L 25 -11 L 30 -23 Q 32 -27 36 -25 Q 40 -23 37 -18 L 29 -4 Q 25 4 16 5 L 5 4 Q -1 3 -4 -1 Z"
+            fill="#C98765"
+            stroke="#995E46"
+            strokeWidth="1.3"
+            strokeLinejoin="round"
+          />
+          {isWaving && (
             <path
-              d="M95 414
-                 Q84 408 77 416
-                 Q70 424 77 434
-                 Q85 443 98 437
-                 L105 427
-                 Q108 420 101 416
-                 Z"
-              fill="#C98765"
-              stroke="#995E46"
-              strokeWidth="1.5"
-            />
-
-            {/* Índice extendido */}
-            <path
-               d="M79 419
-                  Q69 410 63 402
-                  Q60 399 57 402
-                  Q56 405 60 409
-                  L75 426
-                  Z"
-                  fill="#C98765"
-               stroke="#995E46"
-                strokeWidth="1.5"
-                strokeLinejoin="round"
-              />
-
-            {/* Dedos recogidos */}
-            <path
-              d="M91 435 Q82 432 83 425
-                 Q85 419 91 423
-                 L100 429
-                 M98 434 Q92 428 96 423"
+              d="M 3 -13 Q 6 -10 10 -12 M 16 -13 Q 20 -11 23 -14"
               fill="none"
               stroke="#995E46"
-              strokeWidth="2"
+              strokeWidth="1.3"
               strokeLinecap="round"
             />
-          </g>
-        ) : (
-          <g transform="translate(622 0) scale(-1 1)">
-            {/* Palma */}
-            <path
-              d="M305 414
-                 Q316 408 323 416
-                 Q330 424 323 434
-                 Q315 443 302 437
-                 L295 427
-                 Q292 420 299 416
-                 Z"
-              fill="#C98765"
-              stroke="#995E46"
-              strokeWidth="1.5"
-            />
-          </g>
-        )
-      ) : (
-        isIzq ? (
-          <g transform="translate(10, 0)">
-            <path
-              d="M85 400 L100 398 L105 418 Q108 433 95 438 Q82 440 74 428 L70 412 Q68 402 85 400 Z"
-              fill="#C98765"
-            />
-            <path
-              d="M98 405 Q108 403 110 410 Q112 417 105 419 Q98 419 96 412"
-              fill="#C98765"
-            />
-          </g>
-        ) : (
-          <g transform="translate(400 0) scale(-1 1)">
-            <g transform="translate(10, 0)">
-              <path
-                d="M85 400 L100 398 L105 418 Q108 433 95 438 Q82 440 74 428 L70 412 Q68 402 85 400 Z"
-                fill="#C98765"
-              />
-              <path
-                d="M98 405 Q108 403 110 410 Q112 417 105 419 Q98 419 96 412"
-                fill="#C98765"
-              />
-            </g>
-          </g>
-        )
+          )}
+        </g>
+      )}
+
+      {/* 2. SEÑALANDO (índice arriba, dedos recogidos abajo) */}
+       {pose === "señalando" && (
+              <g transform="scale(1.6) translate(5, -12)">
+          {/* 1. Índice extendido recto desde la parte superior */}
+          <path
+            d="M 10 2
+               L 35 1
+               Q 40 1 40 5
+               Q 40 9 35 9
+               L 12 10
+               Z"
+            fill="#C98765"
+            stroke="#995E46"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+
+          {/* 2. Palma y dorso de la mano */}
+          <path
+            d="M -2 2
+               Q 8 -1 15 3
+               Q 20 8 18 16
+               Q 15 23 5 23
+               L -3 20
+               Q -7 12 -2 2
+               Z"
+            fill="#C98765"
+            stroke="#995E46"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+
+          {/* 3. Dedos medio, anular y meñique recogidos debajo */}
+          <path
+            d="M 14 11 Q 20 11 19 15 Q 18 18 12 17
+               M 13 16 Q 18 16 17 20 Q 16 22 10 21
+               M 10 20 Q 15 20 14 23 Q 12 25 7 23"
+            fill="none"
+            stroke="#995E46"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+
+          {/* 4. Pulgar doblado por encima de los dedos recogidos */}
+          <path
+            d="M 4 5
+               Q 11 6 13 11
+               Q 14 15 9 15
+               Q 5 15 4 11"
+            fill="#C98765"
+            stroke="#995E46"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </g>
+      )}
+
+            {/* 3. RELAJADA */}
+      {pose === "relajada" && (
+        <g transform="translate(-8, -6) scale(1.1)">
+          {/* Palma */}
+          <path
+            d="M 15 0 L 0 -2 L -5 18 Q -8 33 5 38 Q 18 40 26 28 L 30 12 Q 32 2 15 0 Z"
+            fill="#red"
+            stroke="#995E46"
+            strokeWidth="1.4"
+            strokeLinejoin="round"
+          />
+          {/* Pulgar hacia el cuerpo */}
+          <path
+            d="M 2 5 Q -8 3 -10 10 Q -12 17 -5 19 Q 2 19 4 12"
+            fill="#C98765"
+            stroke="#995E46"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+          />
+        </g>
       )}
     </g>
   );

@@ -10,7 +10,7 @@ interface AudioEngine {
   context: AudioContext;
   analyser: AnalyserNode;
   destination: MediaStreamAudioDestinationNode;
-  samples: Uint8Array<ArrayBuffer>;
+  samples: Float32Array<ArrayBuffer>;
 }
 
 const audioEngines = new WeakMap<HTMLAudioElement, AudioEngine>();
@@ -24,8 +24,7 @@ const createAudioEngine = (audio: HTMLAudioElement): AudioEngine => {
   const analyser = context.createAnalyser();
   const destination = context.createMediaStreamDestination();
 
-  analyser.fftSize = 512;
-  analyser.smoothingTimeConstant = 0.35;
+  analyser.fftSize = 256;
   source.connect(analyser);
   analyser.connect(context.destination);
   analyser.connect(destination);
@@ -34,19 +33,18 @@ const createAudioEngine = (audio: HTMLAudioElement): AudioEngine => {
     context,
     analyser,
     destination,
-    samples: new Uint8Array(analyser.fftSize),
+    samples: new Float32Array(analyser.fftSize),
   };
   audioEngines.set(audio, engine);
   return engine;
 };
 
 const getMouthState = (engine: AudioEngine) => {
-  engine.analyser.getByteTimeDomainData(engine.samples);
+  engine.analyser.getFloatTimeDomainData(engine.samples);
 
   let squaredAmplitude = 0;
   for (const sample of engine.samples) {
-    const amplitude = (sample - 128) / 128;
-    squaredAmplitude += amplitude * amplitude;
+    squaredAmplitude += sample * sample;
   }
 
   const volume = Math.sqrt(squaredAmplitude / engine.samples.length);

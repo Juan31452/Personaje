@@ -55,15 +55,15 @@ export const CAMERA_VIEWS: Record<string, CameraView> = {
     translateY: 402,
   },
 
-  // 📷 Primer plano (acercamiento cercano)
+  // Primer plano: cara y parte superior del torso
   closeUp: {
     rotate: 0,
     skewX: 0,
     skewY: 0,
-    scaleX: 1.85,
-    scaleY: 1.85,
+    scaleX: 2.60,
+    scaleY: 2.60,
     translateX: 0,
-    translateY: -170,
+    translateY: 400,
   },
 
   // 📷 Zoom out (alejar)

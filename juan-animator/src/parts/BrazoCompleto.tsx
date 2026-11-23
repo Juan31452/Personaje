@@ -20,7 +20,7 @@ const BrazoCompleto: FC<BrazoCompletoProps> = ({
   handAngle = 0,
   scale = 1,
   translateY = 0,
-  handPose = "abierta",
+  handPose = "relajada",
 }) => {
   const isIzq = lado === "izquierdo";
   
