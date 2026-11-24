@@ -132,20 +132,6 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
           <Zapatos />
           <Torso />
           <Cuello />
-          <BrazoCompleto
-            lado="izquierdo"
-            armAngle={effectiveLeftArmAngle}
-            forearmAngle={effectiveLeftForearmAngle}
-            handAngle={effectiveLeftHandAngle}
-            handPose={gesture === "waving" ? "saludando" : "abierta"}
-          />
-          <BrazoCompleto
-            lado="derecho"
-            armAngle={effectiveRightArmAngle}
-            forearmAngle={effectiveRightForearmAngle}
-            handAngle={effectiveRightHandAngle}
-            handPose={rightHandPose}
-          />
           <g
             id="cabeza-grupo"
             style={{
@@ -159,6 +145,26 @@ const JuanSalazar: FC<JuanSalazarProps> = ({
               eyebrowRaise={gestureAngles.eyebrowRaise}
             />
           </g>
+          <BrazoCompleto
+            lado="izquierdo"
+            armAngle={effectiveLeftArmAngle}
+            forearmAngle={effectiveLeftForearmAngle}
+            handAngle={effectiveLeftHandAngle}
+            handPose={
+              gesture === "thinking"
+                ? "pensando"
+                : gesture === "waving"
+                  ? "saludando"
+                  : "abierta"
+            }
+          />
+          <BrazoCompleto
+            lado="derecho"
+            armAngle={effectiveRightArmAngle}
+            forearmAngle={effectiveRightForearmAngle}
+            handAngle={effectiveRightHandAngle}
+            handPose={rightHandPose}
+          />
         </g>
       </g>
     </svg>

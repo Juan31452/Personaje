@@ -1,7 +1,7 @@
 import type { FC } from "react";
 import BrazoSuperior from "./BrazoSuperior";
 import Antebrazo from "./Antebrazo";
-import Mano from "./Mano";
+import Mano, { type HandPose } from "./Mano";
 
 interface BrazoCompletoProps {
   lado: "izquierdo" | "derecho";
@@ -10,7 +10,7 @@ interface BrazoCompletoProps {
   handAngle?: number;       // Muñeca
   scale?: number;           // Escala de profundidad
   translateY?: number;      // Traslación vertical de profundidad
-  handPose?: "abierta" | "relajada" | "señalando" | "saludando"; // Posición de la mano
+  handPose?: HandPose;      // Posición de la mano
 }
 
 const BrazoCompleto: FC<BrazoCompletoProps> = ({

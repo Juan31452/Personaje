@@ -1,9 +1,10 @@
-import type { ChangeEvent, FC } from "react";
+import { useState, type ChangeEvent, type FC } from "react";
 import type { CameraViewName } from "./camera";
 import ImageLoader from "./ImageLoader";
 import type { HeadMovementName } from "../extras/headMovements";
 import { HEAD_MOVEMENTS } from "../extras/headMovements";
 import type { PoseName } from "../extras/poses";
+import { useVoiceRecorder } from "../Hook/useVoiceRecorder";
 
 const GESTURE_OPTIONS: { value: PoseName; label: string }[] = [
   { value: "idle", label: "Reposo" },
@@ -56,6 +57,7 @@ interface PanelProps {
   onCameraViewChange: (value: CameraViewName) => void;
   onHeadMovementChange: (value: HeadMovementName) => void;
   onImportAudio: (event: ChangeEvent<HTMLInputElement>) => void;
+  onImportAudioFile?: (file: File) => void;
   onImageChange: (url: string) => void;
   onImageErrorChange: (error: string) => void;
   onTalk: () => void;
@@ -81,11 +83,32 @@ const Panel: FC<PanelProps> = ({
   onCameraViewChange,
   onHeadMovementChange,
   onImportAudio,
+  onImportAudioFile,
   onImageChange,
   onImageErrorChange,
   onTalk,
   onExport,
 }) => {
+  const [audioTab, setAudioTab] = useState<"file" | "mic">("file");
+  const recorder = useVoiceRecorder();
+
+  const formatTime = (ms: number) => {
+    const totalSecs = Math.floor(ms / 1000);
+    const mins = Math.floor(totalSecs / 60);
+    const secs = totalSecs % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleUseRecording = () => {
+    if (!recorder.audioBlob || !onImportAudioFile) return;
+    const mime = recorder.audioBlob.type || "audio/webm";
+    const ext = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
+    const file = new File([recorder.audioBlob], `grabacion_${Date.now()}.${ext}`, {
+      type: mime,
+    });
+    onImportAudioFile(file);
+  };
+
   const cambiarVistaCamara = (event: ChangeEvent<HTMLSelectElement>) => {
     const value = CAMERA_VIEW_OPTIONS.find(
       (option) => option.value === event.currentTarget.value,
@@ -102,20 +125,120 @@ const Panel: FC<PanelProps> = ({
     if (value) onHeadMovementChange(value.value);
   };
 
+  const hasText = Boolean(dialogo.trim());
+  const canPerformAction = canPlayAudio && hasText && !isExporting;
+
   return (
     <aside className="editor-toolbar" aria-label="Controles del editor">
-      <label className="editor-field">
-        <span>Importar audio</span>
-        <input
-          type="file"
-          accept="audio/*,.mp3,.wav,.m4a,.ogg"
-          onChange={onImportAudio}
-          disabled={isExporting}
-        />
-      </label>
+      <div className="audio-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={audioTab === "file"}
+          className={`audio-tab-btn ${audioTab === "file" ? "audio-tab-btn--active" : ""}`}
+          onClick={() => setAudioTab("file")}
+          disabled={isExporting || recorder.isRecording}
+        >
+          📁 Subir archivo
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={audioTab === "mic"}
+          className={`audio-tab-btn ${audioTab === "mic" ? "audio-tab-btn--active" : ""}`}
+          onClick={() => setAudioTab("mic")}
+          disabled={isExporting || recorder.isRecording}
+        >
+          🎙️ Grabar voz
+        </button>
+      </div>
+
+      {audioTab === "file" ? (
+        <label className="editor-field">
+          <span>Importar archivo de audio</span>
+          <input
+            type="file"
+            accept="audio/*,.mp3,.wav,.m4a,.ogg"
+            onChange={onImportAudio}
+            disabled={isExporting}
+          />
+        </label>
+      ) : (
+        <div className="voice-recorder-container">
+          {!recorder.isRecording && !recorder.audioUrl && (
+            <button
+              type="button"
+              className="recorder-btn-start"
+              onClick={recorder.startRecording}
+              disabled={isExporting}
+            >
+              🔴 Iniciar grabación
+            </button>
+          )}
+
+          {recorder.isRecording && (
+            <div className="recorder-active-box">
+              <div className="recorder-status">
+                <span className="recording-dot" />
+                <span>{recorder.isPaused ? "Pausado" : "Grabando..."}</span>
+                <span className="recorder-timer">{formatTime(recorder.duration)}</span>
+              </div>
+              <div className="recorder-controls">
+                {recorder.isPaused ? (
+                  <button type="button" onClick={recorder.resumeRecording}>
+                    ▶️ Reanudar
+                  </button>
+                ) : (
+                  <button type="button" onClick={recorder.pauseRecording}>
+                    ⏸️ Pausar
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="recorder-btn-stop"
+                  onClick={recorder.stopRecording}
+                >
+                  ⏹️ Finalizar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {recorder.audioUrl && !recorder.isRecording && (
+            <div className="recorder-finished-box">
+              <div className="recorder-preview-info">
+                <span>Audio grabado listo:</span>
+                <span className="recorder-timer">{formatTime(recorder.duration)}</span>
+              </div>
+              <audio src={recorder.audioUrl} controls className="recorder-audio-preview" />
+              <div className="recorder-controls">
+                <button
+                  type="button"
+                  className="recorder-btn-use"
+                  onClick={handleUseRecording}
+                  disabled={isExporting}
+                >
+                  ✅ Usar en personaje
+                </button>
+                <button
+                  type="button"
+                  className="editor-button-secondary"
+                  onClick={recorder.resetRecording}
+                  disabled={isExporting}
+                >
+                  🔄 Grabar otro
+                </button>
+              </div>
+            </div>
+          )}
+
+          {recorder.error && <p className="recorder-error">{recorder.error}</p>}
+        </div>
+      )}
+
       {audioFileName && (
         <span className="audio-file-name" title={audioFileName}>
-          {audioFileName}
+          🔊 Audio activo: {audioFileName}
         </span>
       )}
       <ImageLoader
@@ -178,40 +301,70 @@ const Panel: FC<PanelProps> = ({
           </button>
         </>
       )}
-      <label className="editor-field">
-        <span>Estilo de cámara</span>
-        <select
-          value={cameraView}
-          onChange={cambiarVistaCamara}
-          disabled={isExporting}
+      <div className="editor-row">
+        <label className="editor-field">
+          <span>Estilo de cámara</span>
+          <select
+            value={cameraView}
+            onChange={cambiarVistaCamara}
+            disabled={isExporting}
+          >
+            {CAMERA_VIEW_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="editor-field">
+          <span>Movimiento de cabeza</span>
+          <select
+            value={headMovement}
+            onChange={cambiarMovimientoCabeza}
+            disabled={isExporting}
+          >
+            {HEAD_MOVEMENT_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="editor-actions-row">
+        <button
+          className="editor-button-talk"
+          onClick={onTalk}
+          disabled={!canPerformAction}
+          title={
+            !canPlayAudio && !hasText
+              ? "Requiere importar o grabar audio y escribir un texto"
+              : !canPlayAudio
+                ? "Requiere importar o grabar un audio"
+                : !hasText
+                  ? "Escribe el texto del diálogo para poder hablar"
+                  : "Hacer hablar al personaje"
+          }
         >
-          {CAMERA_VIEW_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="editor-field">
-        <span>Movimiento de cabeza</span>
-        <select
-          value={headMovement}
-          onChange={cambiarMovimientoCabeza}
-          disabled={isExporting}
+          Hablar
+        </button>
+        <button
+          className="editor-button-export"
+          onClick={onExport}
+          disabled={!canPerformAction}
+          title={
+            !canPlayAudio && !hasText
+              ? "Requiere importar o grabar audio y escribir un texto"
+              : !canPlayAudio
+                ? "Requiere importar o grabar un audio"
+                : !hasText
+                  ? "Escribe el texto del diálogo para exportar"
+                  : "Exportar animación a video MP4"
+          }
         >
-          {HEAD_MOVEMENT_OPTIONS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button onClick={onTalk} disabled={isExporting || !canPlayAudio}>
-        Hablar
-      </button>
-      <button onClick={onExport} disabled={isExporting || !canPlayAudio}>
-        {isExporting ? `Exportando ${exportProgress}%` : "Exportar MP4"}
-      </button>
+          {isExporting ? `Exportando ${exportProgress}%` : "Exportar MP4"}
+        </button>
+      </div>
     </aside>
   );
 };

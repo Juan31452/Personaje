@@ -3,6 +3,7 @@ import AudioManager from "./components/AudioManager";
 import Dialogo from "./components/Dialogo";
 import JuanSalazar from "./components/JuanSalazar";
 import Panel from "./components/Panel";
+import TTSEditor from "./components/TTSEditor";
 import "./App.css";
 import { GESTURE_TRANSITION_DURATION } from "./Hook/useGesture";
 import type { CameraViewName } from "./components/camera";
@@ -22,6 +23,7 @@ function App() {
     useState<HeadMovementName>("sway");
   const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
   const [backgroundError, setBackgroundError] = useState("");
+  const [showTTS, setShowTTS] = useState(true);
   const characterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -119,7 +121,7 @@ function App() {
             : GESTURE_TRANSITION_DURATION;
 
         return (
-        <div className="video-editor">
+        <div className={`video-editor ${showTTS ? "video-editor--with-tts" : ""}`}>
           <Panel
             dialogo={dialogo}
             selectedGestures={selectedGestures}
@@ -141,6 +143,7 @@ function App() {
             onCameraViewChange={setCameraView}
             onHeadMovementChange={setHeadMovement}
             onImportAudio={audio.onImportAudio}
+            onImportAudioFile={audio.onImportAudioFile}
             onImageChange={setBackgroundImageUrl}
             onImageErrorChange={setBackgroundError}
             onTalk={() => {
@@ -154,6 +157,14 @@ function App() {
           />
 
           <main className="editor-canvas">
+            <button
+              type="button"
+              className="tts-toggle-btn"
+              onClick={() => setShowTTS((v) => !v)}
+              title={showTTS ? "Ocultar panel TTS" : "Abrir generador de voz TTS"}
+            >
+              🗣️ {showTTS ? "Ocultar TTS" : "Voz TTS"}
+            </button>
             <div className="character-container" ref={characterRef}>
               <Dialogo
                 texto={
@@ -202,6 +213,27 @@ function App() {
               </p>
             )}
           </main>
+
+          {showTTS && (
+            <aside className="editor-tts-sidebar" aria-label="Editor de voz TTS">
+              <div className="tts-sidebar-header">
+                <h3>🗣️ Voz Sintética (TTS)</h3>
+                <button
+                  type="button"
+                  className="tts-close-btn"
+                  onClick={() => setShowTTS(false)}
+                  title="Cerrar panel TTS"
+                >
+                  ✕
+                </button>
+              </div>
+              <TTSEditor
+                dialogos={audio.dialogos}
+                onApplyText={(text) => setDialogo(text)}
+                onApplyAudio={(file) => audio.onImportAudioFile(file)}
+              />
+            </aside>
+          )}
         </div>
         );
       }}

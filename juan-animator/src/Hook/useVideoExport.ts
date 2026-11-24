@@ -363,6 +363,10 @@ export const useVideoExport = ({
         window.requestAnimationFrame(loop);
       });
 
+      // Ensure mouth animation stops before capturing the final frame
+      audio.pause();
+      // tiny delay to let the mouthState reset via useAudioMouth's pause handler
+      await new Promise((resolve) => setTimeout(resolve, 50));
       await drawPanel();
       await wait(550);
       observer.disconnect();

@@ -25,11 +25,11 @@ export const POSES = {
 
   // 🤔 Pensando (mano debajo de la boca)
   thinking: {
-    leftArmAngle: -50,
+    leftArmAngle: -55,
     rightArmAngle: 0,
-    leftForearmAngle: -127,
+    leftForearmAngle: -135,
     rightForearmAngle: 0,
-    leftHandAngle: 0,
+    leftHandAngle: 15,
     rightHandAngle: 0,
     headTilt: -5,
   },
@@ -71,12 +71,12 @@ export const POSES = {
   // 👉 Señalar con índice derecho
   pointing: {
     leftArmAngle: 0,
-    rightArmAngle: -60,
+    rightArmAngle: -70,
     leftForearmAngle: 0,
-    rightForearmAngle: -30,
+    rightForearmAngle: -45,
     leftHandAngle: 0,
-    rightHandAngle: 120,
-    headTilt: 5,
+    rightHandAngle: 115,
+    headTilt: 6,
   },
 
   // 👋 Saludar

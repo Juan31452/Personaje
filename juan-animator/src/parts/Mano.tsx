@@ -1,6 +1,6 @@
 import type { FC } from "react";
 
-export type HandPose = "abierta" | "relajada" | "señalando" | "saludando" | "presentando";
+export type HandPose = "abierta" | "relajada" | "señalando" | "saludando" | "presentando" | "pensando";
 
 
 interface ManoProps {
@@ -16,7 +16,8 @@ const Mano: FC<ManoProps> = ({
 }) => {
   const isIzq = lado === "izquierdo";
   const isWaving = pose === "saludando";
-  const isOpen = pose === "abierta" || isWaving;
+  const isThinking = pose === "pensando";
+  const isOpen = pose === "abierta" || isWaving || isThinking;
   const openHandTransform = isWaving
     ? isIzq
       ? "translate(-15, -5) scale(1.25)"
@@ -36,26 +37,42 @@ const Mano: FC<ManoProps> = ({
       id={`mano-${lado}`}
       transform={`translate(${pivotX}, ${pivotY}) rotate(${angle}) scale(${mirrorX * 0.8}, 0.8)`}
     >
-      {/* 1. ABIERTA O SALUDANDO */}
-       {isOpen && (
+      {/* 1. ABIERTA O SALUDANDO O PENSANDO */}
+      {isOpen && (
         <g transform={openHandTransform}>
-          <path
-            d="M -4 -1 Q -9 -3 -7 -8 L -3 -21 Q -1 -25 3 -22 L 2 -14 L 1 -35 Q 1 -40 5 -41 Q 9 -41 10 -36 L 10 -17 L 12 -39 Q 13 -44 17 -43 Q 21 -42 20 -37 L 17 -16 L 23 -34 Q 25 -38 29 -36 Q 33 -34 31 -29 L 25 -11 L 30 -23 Q 32 -27 36 -25 Q 40 -23 37 -18 L 29 -4 Q 25 4 16 5 L 5 4 Q -1 3 -4 -1 Z"
-            fill="#C98765"
-            stroke="#995E46"
-            strokeWidth="1.3"
-            strokeLinejoin="round"
-          />
-          {isWaving && (
             <path
-              d="M 3 -13 Q 6 -10 10 -12 M 16 -13 Q 20 -11 23 -14"
-              fill="none"
+              d={
+                isThinking
+                  ? "M -4 -1 Q -12 -2 -14 -6 L -16 -13 Q -17 -18 -11 -17 L 0 -8 L 1 -28 Q 1 -33 5 -34 Q 9 -34 10 -29 L 10 -12 L 12 -30 Q 13 -35 17 -34 Q 21 -33 20 -28 L 17 -10 L 23 -24 Q 25 -28 29 -26 Q 33 -24 31 -19 L 25 -6 L 30 -15 Q 32 -19 36 -17 Q 40 -15 37 -10 L 29 0 Q 25 8 16 9 L 5 8 Q -1 7 -4 -1 Z"
+                  : "M -4 -1 Q -9 -3 -7 -8 L -3 -18 Q -1 -22 3 -19 L 2 -10 L 1 -28 Q 1 -33 5 -34 Q 9 -34 10 -29 L 10 -12 L 12 -30 Q 13 -35 17 -34 Q 21 -33 20 -28 L 17 -10 L 23 -24 Q 25 -28 29 -26 Q 33 -24 31 -19 L 25 -6 L 30 -15 Q 32 -19 36 -17 Q 40 -15 37 -10 L 29 0 Q 25 8 16 9 L 5 8 Q -1 7 -4 -1 Z"
+              }
+              fill="#C98765"
               stroke="#995E46"
               strokeWidth="1.3"
-              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          )}
-        </g>
+            
+            {isWaving && (
+              <>
+                <path
+                  d="M 3 -13 Q 6 -10 10 -12"
+                  fill="none"
+                  stroke="#995E46"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  className="wave-line-1"
+                />
+                <path
+                  d="M 16 -13 Q 20 -11 23 -14"
+                  fill="none"
+                  stroke="#995E46"
+                  strokeWidth="1.3"
+                  strokeLinecap="round"
+                  className="wave-line-2"
+                />
+              </>
+            )}
+          </g>
       )}
 
       {/* 2. SEÑALANDO (índice arriba, dedos recogidos abajo) */}
@@ -64,9 +81,9 @@ const Mano: FC<ManoProps> = ({
           {/* 1. Índice extendido recto desde la parte superior */}
           <path
             d="M 10 2
-               L 35 1
-               Q 40 1 40 5
-               Q 40 9 35 9
+               L 28 1
+               Q 38 1 38 5
+               Q 38 9 33 9
                L 12 10
                Z"
             fill="#C98765"

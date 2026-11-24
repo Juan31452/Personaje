@@ -35,6 +35,7 @@ export interface AudioManagerRenderProps {
   exportError: string;
   exportStatus: string;
   onImportAudio: (event: ChangeEvent<HTMLInputElement>) => void;
+  onImportAudioFile: (file: File) => void;
   onPreparePlayback: () => void;
   onTalk: () => void;
   onExport: () => void;
@@ -95,12 +96,7 @@ const AudioManager: FC<AudioManagerProps> = ({
     [audioDurationMs, dialogos],
   );
 
-  const {
-    mouthState,
-    audioStream,
-    error: mouthError,
-    resumeAudioContext,
-  } = useAudioMouth(audioRef);
+  const { mouthState, error: mouthError, resumeAudioContext } = useAudioMouth(audioRef);
 
   // Libera la URL temporal del archivo anterior al cambiar o desmontar
   useEffect(() => {
@@ -160,11 +156,7 @@ const AudioManager: FC<AudioManagerProps> = ({
     };
   }, [updateDialogProgress]);
 
-  const importAudio = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.currentTarget.files?.[0];
-    event.currentTarget.value = "";
-    if (!file) return;
-
+  const importAudioFile = useCallback((file: File) => {
     if (file.type && !file.type.startsWith("audio/")) {
       setAudioError("Selecciona un archivo de audio válido.");
       return;
@@ -181,6 +173,16 @@ const AudioManager: FC<AudioManagerProps> = ({
     setAudioFileName(file.name);
     setAudioUrl(URL.createObjectURL(file));
   }, []);
+
+  const importAudio = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0];
+      event.currentTarget.value = "";
+      if (!file) return;
+      importAudioFile(file);
+    },
+    [importAudioFile],
+  );
 
   const preparePlayback = useCallback(() => {
     const audio = audioRef.current;
@@ -269,8 +271,8 @@ const AudioManager: FC<AudioManagerProps> = ({
     isTalking,
     mouthState,
     audioFileName,
-    canPlayAudio:
-      Boolean(audioUrl) && Boolean(audioStream) && audioDurationMs > 0,
+      // Consider audio ready if we have a URL or a File object
+    canPlayAudio: Boolean(audioUrl) || Boolean(audioFile),
     isExporting,
     exportProgress,
     audioError,
@@ -278,6 +280,7 @@ const AudioManager: FC<AudioManagerProps> = ({
     exportError,
     exportStatus,
     onImportAudio: importAudio,
+    onImportAudioFile: importAudioFile,
     onPreparePlayback: preparePlayback,
     onTalk,
     onExport: exportVideo,
