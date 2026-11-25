@@ -1,0 +1,450 @@
+/* ========================================
+   PANEL PRINCIPAL (TOOLBAR)
+   ======================================== */
+.editor-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 20px 16px 20px;
+  background-color: #4432e2;
+  color: #f1f5f9;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* ========================================
+   TABS DE AUDIO
+   ======================================== */
+.audio-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #59a776;
+  padding-bottom: 8px;
+}
+
+.audio-tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #598b81;
+  border: 1px solid #6b5f80;
+  border-radius: 6px 6px 0 0;
+  color: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.audio-tab-btn:hover:not(:disabled) {
+  background-color: #5e5275;
+  color: #f1f5f9;
+}
+
+.audio-tab-btn--active {
+  background-color: #59a776;
+  border-color: #59a776;
+  color: #ffffff;
+}
+
+.audio-tab-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   CAMPOS DE FORMULARIO
+   ======================================== */
+.editor-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.editor-field > span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #59a776;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editor-field input[type="file"],
+.editor-field textarea,
+.editor-field select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: #5f967b;
+  border: 1px solid #6ebb78;
+  border-radius: 8px;
+  color: #111111;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.editor-field input[type="file"]:focus,
+.editor-field textarea:focus,
+.editor-field select:focus {
+  outline: none;
+  border-color: #59a776;
+  box-shadow: 0 0 0 3px rgba(89, 167, 118, 0.2);
+}
+
+.editor-field textarea {
+  min-height: 180px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.editor-field textarea::placeholder {
+  color: #04070c;
+  font-style: italic;
+}
+
+.editor-field textarea:disabled,
+.editor-field input:disabled,
+.editor-field select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #3d3450;
+}
+
+.editor-field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2359a776' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+.editor-field select option {
+  background-color: #546c91;
+  color: #f1f5f9;
+}
+
+/* ========================================
+   GRABADOR DE VOZ
+   ======================================== */
+.voice-recorder-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: #eaeee8;
+  border-radius: 8px;
+  border: 1px solid #6b5f80;
+}
+
+.recorder-btn-start {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recorder-btn-start:hover:not(:disabled) {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.recorder-btn-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recorder-active-box,
+.recorder-finished-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recorder-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.recording-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  animation: recording-pulse 1s infinite;
+}
+
+@keyframes recording-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.recorder-timer {
+  margin-left: auto;
+  font-family: monospace;
+  font-size: 16px;
+  color: #59a776;
+  font-weight: 600;
+}
+
+.recorder-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.recorder-controls button {
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #5e5275;
+  border: 1px solid #6b5f80;
+  border-radius: 6px;
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.recorder-controls button:hover:not(:disabled) {
+  background-color: #6b5f80;
+}
+
+.recorder-btn-stop {
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
+.recorder-btn-stop:hover:not(:disabled) {
+  background-color: #dc2626 !important;
+}
+
+.recorder-btn-use {
+  background-color: #59a776 !important;
+  border-color: #59a776 !important;
+}
+
+.recorder-btn-use:hover:not(:disabled) {
+  background-color: #6bc48a !important;
+}
+
+.recorder-preview-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.recorder-audio-preview {
+  width: 100%;
+  height: 40px;
+  border-radius: 6px;
+  background-color: #3d3450;
+}
+
+.recorder-error {
+  color: #f87171;
+  font-size: 13px;
+  padding: 8px;
+  background-color: rgba(239, 68, 68, 0.15);
+  border-radius: 6px;
+  margin: 0;
+}
+
+/* ========================================
+   NOMBRE DE ARCHIVO DE AUDIO
+   ======================================== */
+.audio-file-name {
+  font-size: 12px;
+  color: #59a776;
+  padding: 8px 12px;
+  background-color: #4a3f5e;
+  border-radius: 6px;
+  border-left: 3px solid #59a776;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========================================
+   NOTAS Y TEXTOS INFORMATIVOS
+   ======================================== */
+.editor-note {
+  font-size: 14px;
+  color: #9ca3af;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ========================================
+   SECCIÓN DE GESTOS
+   ======================================== */
+.editor-gesture-field {
+  border: 1px solid #6b5f80;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #4a3f5e;
+}
+
+.editor-gesture-field legend {
+  font-size: 13px;
+  font-weight: 600;
+  color: #59a776;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 8px;
+}
+
+.gesture-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gesture-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background-color: #534768;
+  border: 1px solid #6b5f80;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.gesture-option:hover {
+  background-color: #5e5275;
+  border-color: #59a776;
+}
+
+.gesture-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #59a776;
+  cursor: pointer;
+}
+
+.gesture-option input[type="checkbox"]:checked + span {
+  color: #59a776;
+  font-weight: 600;
+}
+
+.editor-gesture-field:disabled .gesture-option {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   BOTONES GENERALES
+   ======================================== */
+.editor-toolbar > button {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  background-color: #59a776;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editor-toolbar > button:hover:not(:disabled) {
+  background-color: #6bc48a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(89, 167, 118, 0.3);
+}
+
+.editor-toolbar > button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-button-secondary {
+  background-color: #5e5275 !important;
+  border: 1px solid #6b5f80 !important;
+}
+
+.editor-button-secondary:hover:not(:disabled) {
+  background-color: #6b5f80 !important;
+}
+
+/* ========================================
+   FILA DE CAMPOS (Cámara + Movimiento)
+   ======================================== */
+.editor-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ========================================
+   FILA DE ACCIONES (Hablar + Exportar)
+   ======================================== */
+.editor-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.editor-button-talk,
+.editor-button-export {
+  flex: 1;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.editor-button-talk {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.editor-button-talk:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.editor-button-export {
+  background-color: #59a776;
+  color: #ffffff;
+}
+
+.editor-button-export:hover:not(:disabled) {
+  background-color: #6bc48a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(89, 167, 118, 0.3);
+}
+
+.editor-button-talk:disabled,
+.editor-button-export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

@@ -1,5 +1,6 @@
 import { useState, type FC, type ChangeEvent } from "react";
 import { useTextToSpeech } from "../Hook/useTextToSpeech";
+import "../style/TTSEditor.css"; // estilos para el componente TTSEditor
 
 interface TTSEditorProps {
   dialogos?: string[];
@@ -88,15 +89,9 @@ const TTSEditor: FC<TTSEditorProps> = ({
 
         stream.getTracks().forEach((track) => track.stop());
 
-        if (onAudioGenerated) {
-          onAudioGenerated(blob, 0);
-        }
-        if (onApplyAudio) {
-          onApplyAudio(file);
-        }
-        if (onApplyText) {
-          onApplyText(currentText);
-        }
+        if (onAudioGenerated) onAudioGenerated(blob, 0);
+        if (onApplyAudio) onApplyAudio(file);
+        if (onApplyText) onApplyText(currentText);
 
         setIsCapturing(false);
         setCaptureStatus("✅ ¡Voz y diálogo aplicados al personaje con éxito!");
@@ -140,58 +135,23 @@ const TTSEditor: FC<TTSEditorProps> = ({
   };
 
   return (
-    <div
-      className="tts-editor"
-      style={{
-        padding: "16px",
-        backgroundColor: "rgba(255, 255, 255, 0.08)",
-        borderRadius: "8px",
-        color: "#fff",
-      }}
-    >
-      <h3 style={{ margin: "0 0 12px", fontSize: "16px", color: "#fff" }}>
-        🗣️ Text-to-Speech (Voz sintética)
-      </h3>
+    <div className="tts-editor-container">
+      <h3 className="tts-editor-title">🗣️ Text-to-Speech (Voz sintética)</h3>
 
       {error && (
-        <div
-          style={{
-            color: "#f87171",
-            marginBottom: "10px",
-            padding: "8px 10px",
-            backgroundColor: "rgba(239, 68, 68, 0.15)",
-            borderRadius: "6px",
-            fontSize: "13px",
-          }}
-        >
+        <div className="tts-error-box">
           {error}
         </div>
       )}
 
       {/* Selector de diálogo */}
       {dialogos.length > 0 && (
-        <div style={{ marginBottom: "12px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "4px",
-              fontSize: "13px",
-              fontWeight: 500,
-            }}
-          >
-            Cargar de los diálogos:
-          </label>
+        <div className="tts-field">
+          <label className="tts-label">Cargar de los diálogos:</label>
           <select
+            className="tts-select"
             value={selectedDialogo}
             onChange={handleSelectDialogo}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "6px",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              background: "#1b2a4a",
-              color: "#fff",
-            }}
           >
             {dialogos.map((d, i) => (
               <option key={i} value={i}>
@@ -203,38 +163,15 @@ const TTSEditor: FC<TTSEditorProps> = ({
       )}
 
       {/* Texto editable */}
-      <div style={{ marginBottom: "12px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "4px",
-          }}
-        >
-          <label
-            style={{
-              fontSize: "13px",
-              fontWeight: 500,
-            }}
-          >
-            Texto a narrar:
-          </label>
+      <div className="tts-field">
+        <div className="tts-field-header">
+          <label className="tts-label">Texto a narrar:</label>
           {onApplyText && (
             <button
               type="button"
+              className="tts-btn-mini"
               onClick={() => onApplyText(customText || dialogos[selectedDialogo] || "")}
               disabled={!currentText.trim()}
-              style={{
-                background: "rgba(59, 130, 246, 0.2)",
-                color: "#60a5fa",
-                border: "1px solid rgba(59, 130, 246, 0.4)",
-                borderRadius: "4px",
-                padding: "2px 8px",
-                fontSize: "11px",
-                cursor: currentText.trim() ? "pointer" : "not-allowed",
-                fontWeight: 500,
-              }}
               title="Copiar este texto a la burbuja de diálogo del personaje"
             >
               📝 Usar en diálogo
@@ -242,52 +179,24 @@ const TTSEditor: FC<TTSEditorProps> = ({
           )}
         </div>
         <textarea
+          className="tts-textarea"
           value={customText}
           onChange={(e) => setCustomText(e.target.value)}
           placeholder="Escribe o edita el texto..."
-          rows={3}
-          style={{
-            width: "100%",
-            padding: "8px 10px",
-            borderRadius: "6px",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            background: "#121f37",
-            color: "#fff",
-            fontFamily: "inherit",
-            fontSize: "14px",
-            boxSizing: "border-box",
-            resize: "vertical",
-          }}
         />
       </div>
 
       {/* Selector de voz */}
-      <div style={{ marginBottom: "12px" }}>
-        <label
-          style={{
-            display: "block",
-            marginBottom: "4px",
-            fontSize: "13px",
-            fontWeight: 500,
-          }}
-        >
-          Voz del sistema:
-        </label>
+      <div className="tts-field">
+        <label className="tts-label">Voz del sistema:</label>
         <select
+          className="tts-select"
           value={selectedVoice?.voiceURI || selectedVoice?.name || ""}
           onChange={(e) => {
             const voice = voices.find(
               (v) => (v.voiceURI || v.name) === e.target.value
             );
             if (voice) selectVoice(voice);
-          }}
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "6px",
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-            background: "#1b2a4a",
-            color: "#fff",
           }}
         >
           {voices.length === 0 && (
@@ -305,126 +214,56 @@ const TTSEditor: FC<TTSEditorProps> = ({
       </div>
 
       {/* Controles de velocidad y tono */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "12px",
-          marginBottom: "14px",
-        }}
-      >
-        <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "4px",
-              fontSize: "12px",
-            }}
-          >
-            Velocidad: {rate.toFixed(1)}x
-          </label>
+      <div className="tts-sliders-grid">
+        <div className="tts-field">
+          <label className="tts-label-small">Velocidad: {rate.toFixed(1)}x</label>
           <input
             type="range"
+            className="tts-slider"
             min="0.5"
             max="2"
             step="0.1"
             value={rate}
             onChange={(e) => setRate(Number(e.target.value))}
-            style={{ width: "100%" }}
           />
         </div>
-        <div>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "4px",
-              fontSize: "12px",
-            }}
-          >
-            Tono: {pitch.toFixed(1)}
-          </label>
+        <div className="tts-field">
+          <label className="tts-label-small">Tono: {pitch.toFixed(1)}</label>
           <input
             type="range"
+            className="tts-slider"
             min="0"
             max="2"
             step="0.1"
             value={pitch}
             onChange={(e) => setPitch(Number(e.target.value))}
-            style={{ width: "100%" }}
           />
         </div>
       </div>
 
       {/* Controles de reproducción */}
-      <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+      <div className="tts-actions-row">
         {!isSpeaking ? (
           <button
             type="button"
+            className="tts-btn tts-btn-primary"
             onClick={handleSpeak}
             disabled={!currentText.trim()}
-            style={{
-              flex: 1,
-              padding: "10px",
-              backgroundColor: "#2563eb",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: currentText.trim() ? "pointer" : "not-allowed",
-              fontSize: "14px",
-              fontWeight: 600,
-              opacity: currentText.trim() ? 1 : 0.6,
-            }}
           >
             ▶️ Escuchar prueba
           </button>
         ) : (
           <>
             {!isPaused ? (
-              <button
-                type="button"
-                onClick={pause}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  backgroundColor: "#d97706",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
+              <button type="button" className="tts-btn tts-btn-pause" onClick={pause}>
                 ⏸️ Pausar
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={resume}
-                style={{
-                  flex: 1,
-                  padding: "10px",
-                  backgroundColor: "#059669",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                }}
-              >
+              <button type="button" className="tts-btn tts-btn-resume" onClick={resume}>
                 ▶️ Continuar
               </button>
             )}
-            <button
-              type="button"
-              onClick={stop}
-              style={{
-                flex: 1,
-                padding: "10px",
-                backgroundColor: "#dc2626",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: "pointer",
-              }}
-            >
+            <button type="button" className="tts-btn tts-btn-stop" onClick={stop}>
               ⏹️ Detener
             </button>
           </>
@@ -433,73 +272,32 @@ const TTSEditor: FC<TTSEditorProps> = ({
 
       {/* Barra de progreso */}
       {isSpeaking && (
-        <div style={{ marginBottom: "10px" }}>
+        <div className="tts-progress-container">
           <div
-            style={{
-              backgroundColor: "rgba(255,255,255,0.15)",
-              borderRadius: "6px",
-              overflow: "hidden",
-              height: "8px",
-            }}
-          >
-            <div
-              style={{
-                width: `${progress}%`,
-                height: "100%",
-                backgroundColor: "#38bdf8",
-                transition: "width 0.1s linear",
-              }}
-            />
-          </div>
+            className="tts-progress-fill"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       )}
 
       {/* Botón para aplicar audio al personaje */}
       <button
         type="button"
+        className={`tts-btn-generate ${isCapturing ? "capturing" : ""}`}
         onClick={handleGenerateAudioForCharacter}
         disabled={isSpeaking || isCapturing || !currentText.trim()}
-        style={{
-          width: "100%",
-          padding: "12px",
-          backgroundColor: isCapturing ? "#dc2626" : "#059669",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          cursor: isSpeaking || isCapturing || !currentText.trim() ? "not-allowed" : "pointer",
-          fontSize: "14px",
-          fontWeight: 600,
-          marginBottom: "8px",
-          transition: "all 0.15s ease",
-          opacity: isSpeaking || !currentText.trim() ? 0.6 : 1,
-        }}
       >
         {isCapturing ? "🔴 Grabando voz para el personaje..." : "🎙️ Generar y usar audio en el personaje"}
       </button>
 
       {captureStatus && (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#38bdf8",
-            fontSize: "12px",
-            marginBottom: "10px",
-            fontWeight: 500,
-          }}
-        >
+        <div className="tts-status-message">
           {captureStatus}
         </div>
       )}
 
       {/* Nota informativa */}
-      <small
-        style={{
-          display: "block",
-          color: "#94a3b8",
-          fontSize: "11px",
-          lineHeight: "1.4",
-        }}
-      >
+      <small className="tts-info-text">
         ℹ️ Al pulsar <strong>"Generar y usar audio"</strong>, el audio sintetizado se graba y se transfiere automáticamente a Juan Salazar con sincronización labial y habilitación de exportación a MP4.
       </small>
     </div>

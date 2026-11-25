@@ -1,0 +1,241 @@
+/* ========================================
+   CONTENEDOR PRINCIPAL DEL EDITOR TTS
+   ======================================== */
+.tts-editor-container {
+  padding: 16px;
+  background-color: #040916;
+  border-radius: 8px;
+  color: #6bc5b2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tts-editor-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ========================================
+   MENSAJES DE ERROR Y ESTADO
+   ======================================== */
+.tts-error-box {
+  color: #f87171;
+  padding: 8px 10px;
+  background-color: rgba(239, 68, 68, 0.15);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.tts-status-message {
+  text-align: center;
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.tts-info-text {
+  display: block;
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* ========================================
+   CAMPOS DE FORMULARIO (Labels, Inputs, Selects)
+   ======================================== */
+.tts-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tts-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tts-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.tts-label-small {
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.tts-input,
+.tts-select,
+.tts-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: #1b2a4a;
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.tts-textarea {
+  background-color: #121f37;
+  resize: vertical;
+  min-height: 80px; /* Equivale a rows={3} */
+}
+
+.tts-input:focus,
+.tts-select:focus,
+.tts-textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+.tts-select option {
+  background-color: #1b2a4a;
+  color: #fff;
+}
+
+/* ========================================
+   BOTÓN MINI (Aplicar a diálogo)
+   ======================================== */
+.tts-btn-mini {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tts-btn-mini:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+.tts-btn-mini:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   SLIDERS (Rango)
+   ======================================== */
+.tts-sliders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tts-slider {
+  width: 100%;
+  cursor: pointer;
+  accent-color: #38bdf8; /* Color del "thumb" del slider */
+}
+
+/* ========================================
+   BOTONES DE ACCIÓN
+   ======================================== */
+.tts-actions-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tts-btn {
+  flex: 1;
+  padding: 10px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.tts-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tts-btn-primary {
+  background-color: #2563eb;
+}
+.tts-btn-primary:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.tts-btn-pause {
+  background-color: #d97706;
+}
+.tts-btn-pause:hover:not(:disabled) {
+  background-color: #b45309;
+}
+
+.tts-btn-resume {
+  background-color: #059669;
+}
+.tts-btn-resume:hover:not(:disabled) {
+  background-color: #047857;
+}
+
+.tts-btn-stop {
+  background-color: #dc2626;
+}
+.tts-btn-stop:hover:not(:disabled) {
+  background-color: #b91c1c;
+}
+
+/* ========================================
+   BOTÓN PRINCIPAL DE GENERACIÓN
+   ======================================== */
+.tts-btn-generate {
+  width: 100%;
+  padding: 12px;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.tts-btn-generate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tts-btn-generate.capturing {
+  background-color: #dc2626;
+}
+
+.tts-btn-generate:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* ========================================
+   BARRA DE PROGRESO
+   ======================================== */
+.tts-progress-container {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  height: 8px;
+}
+
+.tts-progress-fill {
+  height: 100%;
+  background-color: #38bdf8;
+  transition: width 0.1s linear;
+}

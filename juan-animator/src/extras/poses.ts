@@ -1,5 +1,3 @@
-// components/JuanSalazar/poses.ts
-
 export interface Pose {
   leftArmAngle: number;      // Hombro izquierdo
   rightArmAngle: number;     // Hombro derecho
@@ -25,11 +23,11 @@ export const POSES = {
 
   // 🤔 Pensando (mano debajo de la boca)
   thinking: {
-    leftArmAngle: -55,
+    leftArmAngle: -50,
     rightArmAngle: 0,
-    leftForearmAngle: -135,
+    leftForearmAngle: -127,
     rightForearmAngle: 0,
-    leftHandAngle: 15,
+    leftHandAngle: 0,
     rightHandAngle: 0,
     headTilt: -5,
   },
@@ -71,12 +69,12 @@ export const POSES = {
   // 👉 Señalar con índice derecho
   pointing: {
     leftArmAngle: 0,
-    rightArmAngle: -70,
+    rightArmAngle: -60,
     leftForearmAngle: 0,
-    rightForearmAngle: -45,
+    rightForearmAngle: -30,
     leftHandAngle: 0,
-    rightHandAngle: 115,
-    headTilt: 6,
+    rightHandAngle: 120,
+    headTilt: 5,
   },
 
   // 👋 Saludar

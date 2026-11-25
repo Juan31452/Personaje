@@ -18,7 +18,7 @@ const EMPTY_CUSTOM: Partial<Pose> = {};
 
 /**
  * Hook que aplica un gesto con animación suave.
- * Interpola los ángulos desde la pose actual hasta la pose destino.
+ * Interpola los ángulos y el giro del cuerpo desde la pose actual hasta la pose destino.
  */
 export const useGesture = ({
   pose = "idle",
@@ -48,6 +48,7 @@ export const useGesture = ({
       rightHandAngle: custom.rightHandAngle ?? base.rightHandAngle,
       headTilt: custom.headTilt ?? base.headTilt,
       eyebrowRaise: custom.eyebrowRaise ?? base.eyebrowRaise ?? 0,
+      bodyTurn: custom.bodyTurn ?? base.bodyTurn ?? 0, // 🔧 AGREGADO: Giro del cuerpo
     };
 
     const start = { ...currentPoseRef.current };
@@ -88,6 +89,12 @@ export const useGesture = ({
         eyebrowRaise: lerp(
           start.eyebrowRaise ?? 0,
           target.eyebrowRaise ?? 0,
+          easedProgress,
+        ),
+        // 🔧 AGREGADO: Interpolación suave del giro del cuerpo
+        bodyTurn: lerp(
+          start.bodyTurn ?? 0,
+          target.bodyTurn ?? 0,
           easedProgress,
         ),
       };

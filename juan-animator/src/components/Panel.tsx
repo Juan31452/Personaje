@@ -5,6 +5,7 @@ import type { HeadMovementName } from "../extras/headMovements";
 import { HEAD_MOVEMENTS } from "../extras/headMovements";
 import type { PoseName } from "../extras/poses";
 import { useVoiceRecorder } from "../Hook/useVoiceRecorder";
+import "../style/Panel.css"; // 👈 Importamos el CSS
 
 const GESTURE_OPTIONS: { value: PoseName; label: string }[] = [
   { value: "idle", label: "Reposo" },

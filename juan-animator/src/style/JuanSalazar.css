@@ -1,0 +1,55 @@
+/* ========================================
+   SVG PRINCIPAL
+   ======================================== */
+.juan-salazar-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+}
+
+/* ========================================
+   GRUPO DE CÁMARA VIRTUAL
+   ======================================== */
+.camera-group {
+  /* Las transformaciones se aplican inline porque son dinámicas */
+}
+
+/* ========================================
+   GRUPO PRINCIPAL DEL PERSONAJE
+   ======================================== */
+.character-group {
+  /* El translate y scale base se aplican inline */
+}
+
+/* ========================================
+   SOMBRA DEL SUELO
+   ======================================== */
+.floor-shadow {
+  fill: #B8C7D3;
+  opacity: 0.5;
+}
+
+/* ========================================
+   GRUPO DEL TORSO CON GIRO 2.5D
+   ======================================== */
+.torso-group {
+  transform-origin: 200px 350px;
+  /* translateX y scaleX se aplican inline porque dependen de bodyTurn */
+}
+
+/* ========================================
+   GRUPO DE LA CABEZA
+   ======================================== */
+.head-group {
+  transform-origin: 200px 270px;
+  /* translate y rotate se aplican inline porque son dinámicos */
+}
+
+/* ========================================
+   BRAZOS
+   ======================================== */
+.arm-left,
+.arm-right {
+  /* Las escalas se aplican inline porque dependen de bodyTurn */
+}

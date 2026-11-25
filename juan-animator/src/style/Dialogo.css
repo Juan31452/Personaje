@@ -1,0 +1,138 @@
+/* components/Dialogo.css */
+
+/* ========================================
+   CONTENEDOR PRINCIPAL DEL DIÁLOGO
+   ======================================== */
+.dialogo-wrapper {
+  position: absolute;
+  z-index: 10;
+  animation: dialogo-fade-in 0.3s ease-in-out;
+}
+
+.dialogo-wrapper--no-anim {
+  animation: none !important;
+}
+
+/* Posiciones dinámicas del contenedor */
+.dialogo-wrapper--arriba {
+  top: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dialogo-wrapper--abajo {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dialogo-wrapper--izquierda {
+  right: calc(100% + 30px);
+  top: 36%;
+  transform: translateY(-50%);
+}
+
+.dialogo-wrapper--derecha {
+  left: calc(100% + 30px);
+  top: 36%;
+  transform: translateY(-50%);
+}
+
+/* ========================================
+   BURBUJA DE TEXTO
+   ======================================== */
+.dialogo-bubble {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  border: 3px solid #2C3E50;
+  border-radius: 24px;
+  padding: 18px 24px;
+  width: min(52vw, 360px);
+  max-width: 360px;
+  min-width: 240px;
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #2C3E50;
+  text-align: left;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  position: relative;
+}
+
+/* ========================================
+   PUNTA DE LA BURBUJA (TRIÁNGULO)
+   ======================================== */
+.dialogo-punta {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.dialogo-punta--arriba {
+  left: 50%;
+  bottom: -15px;
+  transform: translateX(-50%);
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-top: 15px solid #2C3E50;
+}
+
+.dialogo-punta--abajo {
+  left: 50%;
+  top: -15px;
+  transform: translateX(-50%);
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 15px solid #2C3E50;
+}
+
+.dialogo-punta--izquierda {
+  top: 50%;
+  right: -15px;
+  transform: translateY(-50%);
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-left: 15px solid #2C3E50;
+}
+
+.dialogo-punta--derecha {
+  top: 50%;
+  left: -15px;
+  transform: translateY(-50%);
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+  border-right: 15px solid #2C3E50;
+}
+
+/* ========================================
+   PALABRAS Y ANIMACIONES
+   ======================================== */
+.dialogo-palabra {
+  display: inline-block;
+}
+
+.dialogo-palabra-activa {
+  color: #c2410c !important;
+  font-weight: 800 !important;
+}
+
+.dialogo-palabra-animada {
+  animation: dialogo-palabra-pop 0.25s ease-out both;
+}
+
+/* Keyframes */
+@keyframes dialogo-fade-in {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dialogo-palabra-pop {
+  from {
+    color: #2C3E50;
+    transform: scale(1);
+  }
+  to {
+    color: #c2410c;
+    transform: scale(1.08);
+  }
+}
